@@ -1,102 +1,77 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA MASTER | COMMAND UNIT V8</title>
+    <title>SBA MASTER | MOBILE V8.1</title>
     <style>
-        :root { --admin-red: #ba0c2f; --admin-blue: #00274c; --bg: #020617; --card: #1e293b; }
-        body { background: var(--bg); color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding-bottom: 50px; }
+        :root { --admin-red: #ba0c2f; --admin-blue: #00274c; --bg: #0f172a; }
+        body { background: var(--bg); color: #f8fafc; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 30px; }
         
-        /* Header & Stats */
-        .admin-nav { background: #0f172a; padding: 20px; border-bottom: 4px solid var(--admin-red); text-align: center; position: sticky; top: 0; z-index: 1000; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: var(--card); padding: 20px; border-radius: 12px; border-bottom: 3px solid var(--admin-red); text-align: center; }
-        .stat-card h3 { margin: 0; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-card p { margin: 10px 0 0; font-size: 24px; font-weight: bold; color: #38bdf8; }
-
-        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
-        .section-title { font-size: 13px; color: #38bdf8; text-transform: uppercase; letter-spacing: 2px; margin: 40px 0 15px; border-left: 4px solid var(--admin-red); padding-left: 10px; font-weight: bold; }
+        /* Mobile Sticky Header */
+        .admin-nav { background: #1e293b; padding: 15px; border-bottom: 3px solid var(--admin-red); position: sticky; top: 0; z-index: 1000; text-align: center; }
         
-        /* User Table */
-        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
-        th { text-align: left; color: #94a3b8; padding: 12px; border-bottom: 1px solid #334155; }
-        td { padding: 12px; border-bottom: 1px solid #0f172a; }
+        /* Quick Stats Scroll */
+        .stats-wrapper { display: flex; overflow-x: auto; gap: 10px; padding: 15px; scrollbar-width: none; }
+        .stat-card { min-width: 140px; background: #334155; padding: 15px; border-radius: 12px; text-align: center; flex-shrink: 0; }
+        .stat-card p { margin: 5px 0 0; font-size: 18px; font-weight: bold; color: #38bdf8; }
 
-        /* Request Feed */
-        .req-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .req-item { background: #ffffff; color: #0f172a; padding: 20px; border-radius: 12px; border-top: 6px solid #f59e0b; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
-        .view-btn { background: var(--admin-blue); color: white; padding: 8px 12px; text-decoration: none; border-radius: 6px; font-size: 10px; font-weight: bold; display: inline-block; margin: 5px 2px; text-transform: uppercase; }
+        .container { padding: 10px; }
+        .section-title { font-size: 11px; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin: 25px 0 10px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        
+        /* User List as Mobile Cards */
+        .user-card { background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #38bdf8; }
+        .user-card b { font-size: 14px; display: block; margin-bottom: 5px; }
+        .user-card span { font-size: 11px; color: #94a3b8; display: block; }
+        .user-card .bal { color: #10b981; font-weight: bold; font-size: 14px; margin-top: 5px; }
 
-        /* Professional Chat */
-        .chat-card { background: #ffffff; color: #1e293b; border-radius: 12px; padding: 0; margin-bottom: 30px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .chat-header { background: #f8fafc; padding: 12px 20px; border-bottom: 1px solid #e2e8f0; font-weight: bold; color: var(--admin-blue); display: flex; justify-content: space-between; align-items: center; }
-        .chat-history { height: 300px; overflow-y: auto; background: #f1f5f9; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .msg { max-width: 80%; padding: 12px 16px; border-radius: 15px; font-size: 13px; line-height: 1.5; position: relative; }
+        /* Request Feed Card */
+        .req-item { background: #ffffff; color: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-top: 5px solid #f59e0b; }
+        
+        /* Mobile Chat Windows */
+        .chat-card { background: #ffffff; color: #1e293b; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+        .chat-header { background: #f1f5f9; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; font-size: 11px; border-bottom: 1px solid #ddd; }
+        .chat-history { height: 250px; overflow-y: auto; background: #f8fafc; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .msg { max-width: 85%; padding: 10px; border-radius: 12px; font-size: 13px; }
         .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; border-bottom-right-radius: 2px; }
-        .msg.user { align-self: flex-start; background: #fff; border: 1px solid #cbd5e1; color: #1e293b; border-bottom-left-radius: 2px; }
-        .reply-box { padding: 15px; background: #fff; display: flex; gap: 10px; border-top: 1px solid #eee; }
-        .reply-box input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none; }
-
-        /* Buttons */
-        .action-btn { background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .action-btn:hover { opacity: 0.8; }
-        .decline-btn { background: var(--admin-red); }
-        .search-input { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .msg.user { align-self: flex-start; background: #e2e8f0; border-bottom-left-radius: 2px; }
+        
+        .reply-box { padding: 10px; display: flex; gap: 5px; background: #fff; border-top: 1px solid #eee; }
+        .reply-box input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; -webkit-appearance: none; }
+        
+        .action-btn { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; font-size: 12px; }
+        .view-btn { display: inline-block; background: #64748b; color: white; padding: 8px 15px; text-decoration: none; border-radius: 6px; font-size: 11px; margin: 5px 5px 10px 0; }
     </style>
 </head>
 <body>
 
     <div class="admin-nav">
-        <h1 style="font-size: 18px; margin: 0; letter-spacing: 2px;">SBA COMMAND UNIT | CORE V8</h1>
-        <div id="adminEmail" style="font-size: 10px; color: #38bdf8; margin-top: 5px; font-weight: bold;">AUTHENTICATING...</div>
+        <h1 style="font-size: 16px; margin: 0; color: white;">COMMAND V8.1 MOBILE</h1>
+        <div id="adminEmail" style="font-size: 10px; color: #38bdf8; margin-top: 3px;">INITIALIZING...</div>
+    </div>
+
+    <div class="stats-wrapper">
+        <div class="stat-card"><h3>Users</h3><p id="stat-users">0</p></div>
+        <div class="stat-card"><h3>Tasks</h3><p id="stat-reqs">0</p></div>
+        <div class="stat-card"><h3>Payout</h3><p id="stat-cash">$0</p></div>
     </div>
 
     <div class="container">
-        
-        <div class="stats-grid">
-            <div class="stat-card"><h3>Total Users</h3><p id="stat-users">0</p></div>
-            <div class="stat-card"><h3>Pending Requests</h3><p id="stat-reqs">0</p></div>
-            <div class="stat-card"><h3>Total Distributed</h3><p id="stat-cash">$0</p></div>
-        </div>
+        <div class="section-title">👤 Active Clients</div>
+        <div id="userList"></div>
 
-        <div class="section-title">Master User Directory</div>
-        <input type="text" id="userSearch" class="search-input" placeholder="Search by name or email...">
-        <div class="card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>CLIENT NAME</th>
-                        <th>EMAIL ADDRESS</th>
-                        <th>BALANCE</th>
-                        <th>STATUS</th>
-                        <th>UID REFERENCE</th>
-                    </tr>
-                </thead>
-                <tbody id="userList"></tbody>
-            </table>
-        </div>
+        <div class="section-title">⚡ Action Stream</div>
+        <div id="requestFeed"></div>
 
-        <div class="section-title">Manual Ledger & Balance Adjuster</div>
-        <div class="card" style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <input type="text" id="targetUid" placeholder="Paste User UID here..." style="flex: 2; min-width: 200px; background: #0f172a; border:1px solid #334155; color:white; padding:12px; border-radius:8px;">
-            <input type="number" id="targetAmount" placeholder="Amount (+ or -)" style="flex: 1; min-width: 150px; background: #0f172a; border:1px solid #334155; color:white; padding:12px; border-radius:8px;">
-            <button onclick="updateBalance()" class="action-btn">UPDATE LEDGER</button>
-        </div>
-
-        <div class="section-title">Live Action Stream (KYC & Payouts)</div>
-        <div id="requestFeed" class="req-grid"></div>
-
-        <div class="section-title">Secure Communication Bridge</div>
+        <div class="section-title">💬 Messages</div>
         <div id="chatFeed"></div>
-
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -111,159 +86,101 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Security Check
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === "liger4683@gmail.com") {
-                document.getElementById('adminEmail').innerText = "AUTHORIZED ACCESS: AGENT " + user.uid.substring(0,8).toUpperCase();
+                document.getElementById('adminEmail').innerText = "AGENT ONLINE: " + user.email;
             } else { window.location.href = "index.html"; }
         });
 
-        // 1. User Directory & Stats
         onSnapshot(collection(db, "users"), (snap) => {
             const list = document.getElementById('userList');
-            let totalCash = 0;
-            let userCount = 0;
-            list.innerHTML = "";
-            
+            let total = 0; list.innerHTML = "";
             snap.forEach(d => {
-                const u = d.data();
-                userCount++;
-                totalCash += parseFloat(u.balance || 0);
-                
+                const u = d.data(); total += parseFloat(u.balance || 0);
                 list.innerHTML += `
-                    <tr>
-                        <td style="color:#38bdf8; font-weight:bold;">${u.fullName || 'No Name'}</td>
-                        <td style="color:#94a3b8;">${u.email || 'N/A'}</td>
-                        <td style="color:#10b981; font-weight:bold;">$${parseFloat(u.balance || 0).toLocaleString()}</td>
-                        <td><span style="background:#0f172a; color:#f59e0b; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:bold;">${(u.status || 'PENDING').toUpperCase()}</span></td>
-                        <td style="font-family:monospace; font-size:11px; color:#64748b;">${d.id}</td>
-                    </tr>`;
+                    <div class="user-card" onclick="navigator.clipboard.writeText('${d.id}'); alert('UID Copied')">
+                        <b>${u.fullName}</b>
+                        <span>${u.email}</span>
+                        <div class="bal">$${parseFloat(u.balance || 0).toLocaleString()}</div>
+                        <span style="color:#f59e0b; font-weight:bold; margin-top:5px;">${u.status}</span>
+                    </div>`;
             });
-            document.getElementById('stat-users').innerText = userCount;
-            document.getElementById('stat-cash').innerText = "$" + totalCash.toLocaleString();
+            document.getElementById('stat-users').innerText = snap.size;
+            document.getElementById('stat-cash').innerText = "$" + total.toLocaleString();
         });
 
-        // 2. Manual Ledger Update
-        window.updateBalance = async () => {
-            const uid = document.getElementById('targetUid').value.trim();
-            const amt = document.getElementById('targetAmount').value;
-            if(!uid || !amt) return alert("Notice: UID and Amount required.");
-            
-            try {
-                const userRef = doc(db, "users", uid);
-                const userSnap = await getDoc(userRef);
-                if(userSnap.exists()){
-                    const currentBal = parseFloat(userSnap.data().balance || 0);
-                    const newTotal = currentBal + parseFloat(amt);
-                    await updateDoc(userRef, { balance: newTotal });
-                    alert("LEDGER UPDATED: New Balance $" + newTotal);
-                    document.getElementById('targetAmount').value = "";
-                } else { alert("Error: UID not found."); }
-            } catch (e) { alert("Action Failed: Check console."); }
-        };
-
-        // 3. Live Action Stream (Requests)
         onSnapshot(collection(db, "requests"), (snap) => {
             const feed = document.getElementById('requestFeed');
             document.getElementById('stat-reqs').innerText = snap.size;
             feed.innerHTML = "";
-            
             snap.forEach(d => {
-                const r = d.data();
-                const isKyc = r.type === "KYC";
-                
+                const r = d.data(); const isKyc = r.type.includes("KYC");
                 feed.innerHTML += `
-                    <div class="req-item" style="border-top-color: ${isKyc ? '#38bdf8' : '#f59e0b'}">
-                        <div style="font-size:9px; color:#94a3b8; margin-bottom:5px;">SECURE ID: ${d.id.toUpperCase()}</div>
-                        <div style="font-weight:bold; color:#00274c; font-size:16px; letter-spacing:-0.5px;">${r.type.toUpperCase()}</div>
-                        <div style="margin:10px 0; font-size:13px;"><b>Name:</b> ${r.userName || 'No Name'}</div>
-                        <div style="font-size:22px; font-weight:900; color:#ba0c2f; margin-bottom:15px;">
-                            ${r.amount ? '$'+parseFloat(r.amount).toLocaleString() : 'IDENTITY FILE'}
-                        </div>
-                        
-                        ${isKyc ? `
-                            <div style="background:#f1f5f9; padding:10px; border-radius:8px; margin-bottom:15px;">
-                                <a href="${r.frontImg}" target="_blank" class="view-btn">View Front</a>
-                                <a href="${r.backImg}" target="_blank" class="view-btn" style="background:#ba0c2f;">View Back</a>
-                            </div>
-                        ` : `
-                            <div style="font-size:11px; color:#64748b; margin-bottom:15px; background:#f8fafc; padding:8px; border-radius:5px;">
-                                <b>Route:</b> ${r.method} <br> <b>Detail:</b> ${r.details} (${r.account})
-                            </div>
-                        `}
-                        
-                        <div style="display:flex; gap:8px;">
-                            <button onclick="processAction('${d.id}', '${r.userId}', 'approve', '${r.type}', '${r.amount}')" class="action-btn" style="flex:1;">APPROVE</button>
-                            <button onclick="processAction('${d.id}', '${r.userId}', 'decline')" class="action-btn decline-btn" style="flex:1;">DECLINE</button>
+                    <div class="req-item">
+                        <small>#${d.id.substring(0,6)}</small>
+                        <b style="display:block; font-size:16px;">${r.type}</b>
+                        <p style="margin:5px 0;">Client: ${r.userName}</p>
+                        <h2 style="margin:10px 0; color:#ba0c2f;">${r.amount ? '$'+parseFloat(r.amount).toLocaleString() : 'KYC FILE'}</h2>
+                        ${isKyc ? `<a href="${r.frontImg}" target="_blank" class="view-btn">VIEW ID FRONT</a><a href="${r.backImg}" target="_blank" class="view-btn" style="background:#ba0c2f">VIEW BACK</a>` : ''}
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="approveReq('${d.id}', '${r.userId}', '${r.type}')" class="action-btn">APPROVE</button>
+                            <button onclick="deleteReq('${d.id}')" class="action-btn" style="background:#64748b">REJECT</button>
                         </div>
                     </div>`;
             });
         });
 
-        window.processAction = async (docId, uid, action, type, amt) => {
+        window.approveReq = async (docId, uid, type) => {
             const userRef = doc(db, "users", uid);
-            if(action === 'approve') {
-                const updateData = { status: (type === 'KYC' ? "IDENTITY VERIFIED" : "DISBURSEMENT SUCCESSFUL") };
-                if(type === 'Withdrawal') {
-                    const snap = await getDoc(userRef);
-                    const newBal = parseFloat(snap.data().balance || 0) - parseFloat(amt);
-                    updateData.balance = newBal;
-                }
-                await updateDoc(userRef, updateData);
+            if(type.includes("KYC")) {
+                await updateDoc(userRef, { kycStatus: "APPROVED", status: "IDENTITY VERIFIED" });
             } else {
-                await updateDoc(userRef, { status: "ACTION DECLINED - CONTACT SUPPORT" });
+                await updateDoc(userRef, { status: "GRANT DISBURSED" });
             }
             await deleteDoc(doc(db, "requests", docId));
+            alert("SUCCESS");
         };
 
-        // 4. Clean Messaging Hub
+        window.deleteReq = async (id) => { await deleteDoc(doc(db, "requests", id)); };
+
         onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snapshot) => {
             const chatFeed = document.getElementById('chatFeed');
             const groups = {};
-            
             snapshot.forEach(snap => {
                 const data = snap.data();
-                if (!groups[data.userId]) groups[data.userId] = { name: data.userName, msgs: [] };
+                if (!groups[data.userId]) groups[data.userId] = { name: data.userName || "User", msgs: [] };
                 groups[data.userId].msgs.push(data);
             });
-
             chatFeed.innerHTML = "";
             for (const uid in groups) {
                 const group = groups[uid];
-                const card = document.createElement('div');
-                card.className = "chat-card";
+                const card = document.createElement('div'); card.className = "chat-card";
                 card.innerHTML = `
-                    <div class="chat-header">
-                        <span>CLIENT: ${group.name.toUpperCase()}</span>
-                        <span style="font-size:10px; color:#94a3b8;">UID: ${uid.substring(0,8)}</span>
-                    </div>
+                    <div class="chat-header"><span>${group.name.toUpperCase()}</span></div>
                     <div class="chat-history" id="chat-${uid}"></div>
                     <div class="reply-box">
-                        <input type="text" id="input-${uid}" placeholder="Send secure reply...">
-                        <button onclick="window.sendReply('${uid}', '${group.name}')" class="action-btn">SEND</button>
+                        <input type="text" id="input-${uid}" placeholder="Type reply...">
+                        <button onclick="sendReply('${uid}', '${group.name}')" class="action-btn" style="flex:0; padding:10px 20px;">SEND</button>
                     </div>`;
-
-                const history = card.querySelector(`#chat-${uid}`);
-                group.msgs.forEach(m => {
-                    const mDiv = document.createElement('div');
-                    mDiv.className = `msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
-                    mDiv.innerText = m.message;
-                    history.appendChild(mDiv);
-                });
                 chatFeed.appendChild(card);
-                history.scrollTop = history.scrollHeight;
+                const hist = document.getElementById(`chat-${uid}`);
+                group.msgs.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = `msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
+                    div.innerText = m.message;
+                    hist.appendChild(div);
+                });
+                hist.scrollTop = hist.scrollHeight;
             }
         });
 
         window.sendReply = async (uid, name) => {
-            const input = document.getElementById(`input-${uid}`);
-            const text = input.value.trim();
-            if(!text) return;
-
+            const val = document.getElementById(`input-${uid}`).value;
+            if(!val) return;
             await addDoc(collection(db, "support_tickets"), {
-                userId: uid, userName: name, message: text, sender: "ADMIN", timestamp: serverTimestamp()
+                userId: uid, userName: name, message: val, sender: "ADMIN", timestamp: serverTimestamp()
             });
-            input.value = "";
+            document.getElementById(`input-${uid}`).value = "";
         };
     </script>
 </body>
