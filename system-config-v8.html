@@ -3,54 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA MASTER | 2026 COMMAND CENTER</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SBA MASTER | COMMAND UNIT V8</title>
     <style>
-        body { background: #020617; color: #f8fafc; font-family: 'Courier New', Courier, monospace; display: none; }
-        .admin-nav { background: #0f172a; padding: 20px; border-bottom: 4px solid #ef4444; text-align: center; position: sticky; top: 0; z-index: 1000; }
-        .section-title { font-size: 11px; font-weight: 800; color: #38bdf8; margin: 30px 0 12px 0; text-transform: uppercase; letter-spacing: 2px; padding-left: 10px; border-left: 4px solid #ef4444; }
-        .req-card { background: #ffffff; color: #0f172a; padding: 18px; border-radius: 8px; margin-bottom: 15px; border-left: 8px solid #f59e0b; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-family: sans-serif; }
-        .manual-card { background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 20px; }
-        .manual-card input { background: #020617; border: 1px solid #38bdf8; color: #38bdf8 !important; margin-bottom: 12px; font-weight: bold; width: 100%; padding: 12px; border-radius: 4px; }
-        .user-table { background: #0f172a; border-radius: 8px; border: 1px solid #1e293b; overflow: hidden; }
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #1e293b; cursor: pointer; }
-        .reply-input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 10px; font-family: sans-serif; box-sizing: border-box; }
-        .send-btn { background: #00274c; color: white; border: none; padding: 12px; border-radius: 6px; margin-top: 5px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase; }
-        .chat-history-box { max-height: 200px; overflow-y: auto; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; margin: 10px 0; display: flex; flex-direction: column; gap: 8px; }
-        .btn-approve { background: #10b981; color: white; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; flex: 1; }
-        .btn-decline { background: #ef4444; color: white; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; flex: 1; }
+        body { background: #020617; color: #f8fafc; font-family: sans-serif; margin: 0; }
+        .admin-nav { background: #0f172a; padding: 20px; border-bottom: 4px solid #ef4444; text-align: center; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .section-title { font-size: 12px; color: #38bdf8; text-transform: uppercase; letter-spacing: 2px; margin: 30px 0 15px; border-left: 4px solid #ef4444; padding-left: 10px; }
+        
+        /* Chat Card Styling */
+        .chat-card { background: #ffffff; color: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .user-header { font-weight: 800; font-size: 14px; color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        
+        .chat-history { height: 250px; overflow-y: auto; background: #f1f5f9; padding: 15px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px; border: 1px solid #cbd5e1; }
+        
+        /* Bubble Fixes */
+        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; word-wrap: break-word; position: relative; }
+        .msg.admin { align-self: flex-end; background: #dcf8c6; border: 1px solid #b5e5a4; color: #14532d; }
+        .msg.user { align-self: flex-start; background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b; }
+        
+        .reply-box { margin-top: 15px; display: flex; gap: 10px; }
+        .reply-box input { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; }
+        .send-btn { background: #ef4444; color: white; border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .send-btn:hover { background: #dc2626; }
+
+        /* Request Stream */
+        .req-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .req-item { background: #1e293b; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; }
     </style>
 </head>
 <body>
+
     <div class="admin-nav">
-        <h1 style="font-size: 14px; color: #ef4444; letter-spacing: 3px;">SBA COMMAND UNIT | CORE V8</h1>
-        <p style="font-size: 10px; margin-top: 5px; color: #94a3b8;">AGENT: <span id="adminEmailDisplay">...</span></p>
+        <h1 style="font-size: 18px; margin: 0;">SBA COMMAND UNIT | CORE V8</h1>
+        <div id="adminEmail" style="font-size: 10px; color: #94a3b8; margin-top: 5px;">CONNECTING...</div>
     </div>
 
-    <div class="container" style="max-width: 600px; padding: 20px; margin: 0 auto;">
+    <div class="container">
         
-        <div class="section-title">Support Conversations (Grouped)</div>
-        <div id="adminChatFeed"></div>
+        <div class="section-title">Support Feed (Live Conversations)</div>
+        <div id="chatFeed"></div>
 
-        <div class="section-title">Live Request Stream</div>
-        <div id="requestFeed"></div>
+        <div class="section-title">Incoming Requests (Withdrawals/KYC)</div>
+        <div id="requestFeed" class="req-list"></div>
 
-        <div class="section-title">Manual Ledger Override</div>
-        <div class="manual-card">
-            <input type="text" id="targetUid" placeholder="USER_UID">
-            <input type="text" id="manualStatus" placeholder="STATUS (e.g. APPROVED)">
-            <input type="text" id="manualAmt" placeholder="ADD/SUBTRACT AMT (e.g. 5000 or -200)">
-            <button class="btn-approve" style="width:100%;" onclick="window.manualUpdate()">SYNC LEDGER</button>
-        </div>
-
-        <div class="section-title">User Database</div>
-        <div class="user-table" id="userList"></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, deleteDoc, addDoc, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -64,18 +65,16 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const MASTER_ADMIN = "liger4683@gmail.com";
 
         onAuthStateChanged(auth, (user) => {
-            if (user && user.email === MASTER_ADMIN) {
-                document.body.style.display = "block";
-                document.getElementById('adminEmailDisplay').innerText = user.email.toUpperCase();
+            if (user && user.email === "liger4683@gmail.com") {
+                document.getElementById('adminEmail').innerText = "AUTHORIZED: " + user.email.toUpperCase();
             } else { window.location.href = "index.html"; }
         });
 
-        // --- FIXED CHAT LOGIC (Grouped by User) ---
+        // --- LIVE CHAT LOGIC ---
         onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snapshot) => {
-            const feed = document.getElementById('adminChatFeed');
+            const chatFeed = document.getElementById('chatFeed');
             const groups = {};
 
             snapshot.forEach(snap => {
@@ -84,102 +83,81 @@
                 groups[data.userId].msgs.push(data);
             });
 
-            feed.innerHTML = "";
+            chatFeed.innerHTML = "";
             for (const uid in groups) {
                 const group = groups[uid];
-                feed.innerHTML += `
-                    <div class="req-card" style="border-left: 8px solid #38bdf8;">
-                        <div style="font-weight:bold; font-size:12px; color:#1e3a8a;">USER: ${group.name}</div>
-                        <div class="chat-history-box">
-                            ${group.msgs.map(m => `
-                                <div style="font-size:12px; align-self: ${m.sender === 'ADMIN' ? 'flex-end' : 'flex-start'}; background: ${m.sender === 'ADMIN' ? '#dcf8c6' : '#fff'}; padding: 6px 10px; border-radius: 8px; border: 1px solid #eee;">
-                                    <b>${m.sender}:</b> ${m.message}
-                                </div>
-                            `).join('')}
-                        </div>
-                        <textarea id="reply-${uid}" class="reply-input" placeholder="Message to ${group.name}..."></textarea>
-                        <button class="send-btn" onclick="window.sendReply('${uid}', '${group.name}')">SEND REPLY</button>
-                    </div>`;
+                const card = document.createElement('div');
+                card.className = "chat-card";
+                
+                card.innerHTML = `
+                    <div class="user-header">
+                        <span>${group.name}</span>
+                        <span style="font-size: 10px; color: #94a3b8;">ID: ${uid.substring(0,8)}</span>
+                    </div>
+                    <div class="chat-history" id="scroll-${uid}"></div>
+                    <div class="reply-box">
+                        <input type="text" id="input-${uid}" placeholder="Type message to ${group.name}...">
+                        <button class="send-btn" onclick="window.reply('${uid}', '${group.name}')">SEND</button>
+                    </div>
+                `;
+
+                const history = card.querySelector(`#scroll-${uid}`);
+                group.msgs.forEach(m => {
+                    const mDiv = document.createElement('div');
+                    mDiv.className = `msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
+                    mDiv.innerText = m.message; // CRITICAL: Fixes the "box inside box" design issue
+                    history.appendChild(mDiv);
+                });
+
+                chatFeed.appendChild(card);
+                history.scrollTop = history.scrollHeight;
             }
         });
 
-        window.sendReply = async (uid, name) => {
-            const box = document.getElementById(`reply-${uid}`);
-            const text = box.value.trim();
+        window.reply = async (uid, name) => {
+            const input = document.getElementById(`input-${uid}`);
+            const text = input.value.trim();
             if(!text) return;
+
             await addDoc(collection(db, "support_tickets"), {
-                userId: uid, userName: name, message: text, sender: "ADMIN", timestamp: serverTimestamp()
+                userId: uid,
+                userName: name,
+                message: text,
+                sender: "ADMIN",
+                timestamp: serverTimestamp()
             });
-            box.value = "";
+            input.value = "";
         };
 
-        // --- REQUEST STREAM (KYC/WITHDRAW) ---
+        // --- REQUEST FEED ---
         onSnapshot(collection(db, "requests"), (snap) => {
             const feed = document.getElementById('requestFeed');
             feed.innerHTML = "";
-            snap.forEach(docSnap => {
-                const req = docSnap.data();
-                const isKYC = req.type === "KYC_SUBMISSION";
+            snap.forEach(d => {
+                const r = d.data();
                 feed.innerHTML += `
-                    <div class="req-card" style="border-left-color: ${isKYC ? '#38bdf8' : '#ef4444'}">
-                        <div style="font-size:11px; font-weight:bold;">${req.type} | ${req.userName}</div>
-                        ${isKYC ? `<button onclick="window.open('${req.frontImg}')" style="font-size:10px; margin-top:5px; cursor:pointer;">VIEW ID FRONT</button>` : `<div style="font-size:20px; color:red; font-weight:bold;">-$${req.amount}</div>`}
-                        <div style="display:flex; gap:10px; margin-top:10px;">
-                            <button class="btn-approve" onclick="window.handleReq('${docSnap.id}', '${req.userId}', '${req.amount || 0}', 'approve', '${req.type}')">APPROVE</button>
-                            <button class="btn-decline" onclick="window.handleReq('${docSnap.id}', '${req.userId}', '0', 'decline', '${req.type}')">DECLINE</button>
+                    <div class="req-item">
+                        <div style="font-size:11px; color:#38bdf8;">${r.type}</div>
+                        <div style="font-weight:bold; margin:5px 0;">${r.userName}</div>
+                        <div style="font-size:14px; color:#ef4444;">${r.amount ? '$'+r.amount : 'KYC VERIFY'}</div>
+                        <div style="margin-top:10px; display:flex; gap:5px;">
+                            <button onclick="window.process('${d.id}', '${r.userId}', 'approve')" style="flex:1; background:#10b981; border:none; color:white; padding:5px; border-radius:4px; cursor:pointer;">APPROVE</button>
+                            <button onclick="window.process('${d.id}', '${r.userId}', 'decline')" style="flex:1; background:#ef4444; border:none; color:white; padding:5px; border-radius:4px; cursor:pointer;">DECLINE</button>
                         </div>
                     </div>`;
             });
         });
 
-        window.handleReq = async (id, uid, amt, action, type) => {
+        window.process = async (docId, uid, action) => {
             const userRef = doc(db, "users", uid);
-            if (action === 'approve') {
-                if (type === "WITHDRAWAL") {
-                    const snap = await getDoc(userRef);
-                    const current = parseFloat(snap.data().balance.toString().replace(/,/g, '')) || 0;
-                    const final = (current - parseFloat(amt)).toLocaleString('en-US', {minimumFractionDigits: 2});
-                    await updateDoc(userRef, { balance: final, status: "TRANSFER COMPLETED" });
-                } else {
-                    await updateDoc(userRef, { status: "IDENTITY VERIFIED", kycStatus: "VERIFIED" });
-                }
+            if(action === 'approve') {
+                await updateDoc(userRef, { status: "PROCESSED / VERIFIED" });
             } else {
                 await updateDoc(userRef, { status: "REJECTED - CHECK SUPPORT" });
             }
-            await deleteDoc(doc(db, "requests", id));
+            await deleteDoc(doc(db, "requests", docId));
+            alert("Updated successfully.");
         };
-
-        // --- MANUAL OVERRIDE ---
-        window.manualUpdate = async () => {
-            const uid = document.getElementById('targetUid').value.trim();
-            const amt = parseFloat(document.getElementById('manualAmt').value) || 0;
-            const status = document.getElementById('manualStatus').value.trim();
-            if(!uid) return alert("Need UID");
-            const userRef = doc(db, "users", uid);
-            const snap = await getDoc(userRef);
-            if(!snap.exists()) return alert("User Not Found");
-            const current = parseFloat(snap.data().balance.toString().replace(/,/g, '')) || 0;
-            const final = (current + amt).toLocaleString('en-US', {minimumFractionDigits: 2});
-            let up = { balance: final };
-            if(status) up.status = status;
-            await updateDoc(userRef, up);
-            alert("Success: New Balance $" + final);
-        };
-
-        // --- USER LIST ---
-        onSnapshot(collection(db, "users"), (snap) => {
-            const list = document.getElementById('userList');
-            list.innerHTML = "";
-            snap.forEach(u => {
-                const d = u.data();
-                if(d.email === MASTER_ADMIN) return;
-                list.innerHTML += `
-                    <div class="user-row" onclick="document.getElementById('targetUid').value='${u.id}'">
-                        <div style="font-size:12px;"><b>${d.fullName}</b><br><small>${u.id.substring(0,8)}</small></div>
-                        <div style="font-weight:bold; color:#10b981;">$${d.balance}</div>
-                    </div>`;
-            });
-        });
     </script>
 </body>
 </html>
