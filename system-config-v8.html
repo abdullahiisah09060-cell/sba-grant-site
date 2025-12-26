@@ -21,31 +21,32 @@
         .user-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #1e293b; transition: 0.2s; cursor: pointer; }
         .user-row:hover { background: #1e293b; }
         .user-bal { font-weight: 900; color: #10b981; font-size: 15px; }
-        .reply-input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; margin-top: 10px; font-family: sans-serif; color: #000; }
+        .reply-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 10px; font-family: sans-serif; color: #000; box-sizing: border-box; font-size: 14px; }
+        .send-btn { background: #00274c; color: white; border: none; padding: 12px; border-radius: 8px; margin-top: 10px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase; }
     </style>
 </head>
 <body>
     <div class="admin-nav">
         <h1 style="font-size: 14px; color: #ef4444; letter-spacing: 3px;">SBA COMMAND UNIT | CORE V8</h1>
-        <p style="font-size: 10px; margin-top: 5px; color: #94a3b8;">ADMIN_SESSION: <span id="adminEmailDisplay">...</span></p>
+        <p style="font-size: 10px; margin-top: 5px; color: #94a3b8;">AGENT_ACTIVE: <span id="adminEmailDisplay">...</span></p>
     </div>
 
     <div class="container" style="max-width: 600px; padding: 20px; margin: 0 auto;">
         
+        <div class="section-title">Inbound Support Tickets</div>
+        <div id="adminChatFeed">
+            <p style="text-align:center; font-size:11px; color:#475569;">SCANNING FOR INCOMING TRANSMISSIONS...</p>
+        </div>
+
         <div class="section-title">Manual Ledger Override</div>
         <div class="manual-card">
             <input type="text" id="targetUid" placeholder="TARGET_USER_UID">
             <input type="text" id="manualStatus" placeholder="NEW_STATUS (e.g. APPROVED)">
-            <input type="text" id="manualAmt" placeholder="ADJUST_BALANCE (e.g. 5000 or -2000)">
+            <input type="text" id="manualAmt" placeholder="ADJUST_BALANCE (e.g. 5000)">
             <button class="btn-approve" style="width:100%;" onclick="window.manualUpdate()">EXECUTE LEDGER SYNC</button>
         </div>
 
-        <div class="section-title">Support Ticket Stream</div>
-        <div id="adminChatFeed">
-            <p style="text-align:center; font-size:11px; color:#475569;">IDLE: SCANNING FOR INBOUND SIGNALS...</p>
-        </div>
-
-        <div class="section-title">Live Action Stream</div>
+        <div class="section-title">Live Request Stream</div>
         <div id="requestFeed"></div>
 
         <div class="section-title">Global User Database</div>
@@ -55,7 +56,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, deleteDoc, addDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, deleteDoc, addDoc, serverTimestamp, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -81,49 +82,70 @@
             }
         });
 
-        // Open Image in New Window
-        window.viewImg = (data) => {
-            const w = window.open();
-            w.document.write(`<body style="margin:0; background:#000; display:flex; justify-content:center; align-items:center;"><img src="${data}" style="max-width:100%; border:5px solid white;"></body>`);
+        // REPLIED TO USER LOGIC
+        window.replyToUser = async (userId, originalMsgId, userName) => {
+            const replyBox = document.getElementById(`reply-${originalMsgId}`);
+            const text = replyBox.value.trim();
+            
+            if(!text) return alert("Please type a message first!");
+
+            try {
+                // Add the reply to the support collection
+                await addDoc(collection(db, "support_tickets"), {
+                    userId: userId,
+                    message: text,
+                    sender: "ADMIN",
+                    timestamp: serverTimestamp(),
+                    userName: "SBA OFFICIAL AGENT"
+                });
+                
+                // Update user's general status to notify them
+                await updateDoc(doc(db, "users", userId), {
+                    adminMessage: text,
+                    lastAgentReply: serverTimestamp()
+                });
+
+                replyBox.value = "";
+                alert("REPLY TRANSMITTED TO " + userName.toUpperCase());
+            } catch(e) {
+                alert("ERROR: " + e.message);
+            }
         };
 
-        // Live Chat Listener
+        // Live Chat Listener (Shows user messages)
         onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "desc")), (snapshot) => {
             const feed = document.getElementById('adminChatFeed');
             feed.innerHTML = "";
             snapshot.forEach((docSnap) => {
                 const m = docSnap.data();
-                if (m.sender === "ADMIN") return;
+                if (m.sender === "ADMIN") return; // Don't show admin's own replies in the feed
+                
                 feed.innerHTML += `
                     <div class="req-card" style="border-left: 8px solid #38bdf8;">
-                        <div style="font-size:10px; color:#64748b; font-weight:bold;">USER: ${m.userName}</div>
-                        <div style="margin:8px 0; font-size:13px; line-height:1.4;">"${m.message}"</div>
-                        <div style="display:flex; gap:5px;">
-                            <input type="text" id="reply-${docSnap.id}" class="reply-input" placeholder="Official SBA Reply...">
-                            <button onclick="window.replyToUser('${m.userId}', '${docSnap.id}', '${m.userName}')" style="background:#0f172a; color:white; border:none; padding:10px; border-radius:4px; margin-top:10px; cursor:pointer; font-weight:bold;">SEND</button>
+                        <div style="font-size:10px; color:#64748b; font-weight:bold;">FROM: ${m.userName} (${m.userId.substring(0,5)})</div>
+                        <div style="margin:8px 0; font-size:13px; line-height:1.4; color:#0f172a;">"${m.message}"</div>
+                        <div>
+                            <textarea id="reply-${docSnap.id}" class="reply-input" placeholder="Type official response here..."></textarea>
+                            <button class="send-btn" onclick="window.replyToUser('${m.userId}', '${docSnap.id}', '${m.userName}')">SEND OFFICIAL REPLY</button>
                         </div>
                     </div>`;
             });
         });
 
-        window.replyToUser = async (userId, inputId, userName) => {
-            const text = document.getElementById(`reply-${inputId}`).value;
-            if(!text) return;
-            await addDoc(collection(db, "support_tickets"), {
-                userId: userId, message: text, sender: "ADMIN", timestamp: serverTimestamp(), userName: "SBA OFFICIAL"
-            });
-            document.getElementById(`reply-${inputId}`).value = "";
-            alert("REPLY SENT TO: " + userName);
+        // ... Rest of your existing Manual Update, Request Feed, and User List logic remains the same ...
+        // (I'm keeping your viewImg, manualUpdate, and processReq functions exactly as you had them)
+
+        window.viewImg = (data) => {
+            const w = window.open();
+            w.document.write(`<body style="margin:0; background:#000; display:flex; justify-content:center; align-items:center;"><img src="${data}" style="max-width:100%; border:5px solid white;"></body>`);
         };
 
-        // Manual Update Logic
         window.manualUpdate = async () => {
             const uid = document.getElementById('targetUid').value.trim();
             const amtStr = document.getElementById('manualAmt').value.replace(/,/g, '');
             const amt = parseFloat(amtStr) || 0;
             const status = document.getElementById('manualStatus').value.trim();
             if(!uid) return alert("UID REQUIRED");
-
             try {
                 const userRef = doc(db, "users", uid);
                 const snap = await getDoc(userRef);
@@ -137,7 +159,6 @@
             } catch(e) { alert("ERROR: " + e.message); }
         };
 
-        // Action Feed (Withdrawals/KYC)
         onSnapshot(collection(db, "requests"), (snapshot) => {
             const feed = document.getElementById('requestFeed');
             feed.innerHTML = "";
@@ -183,7 +204,6 @@
             } catch(e) { alert("ERROR: " + e.message); }
         };
 
-        // User List
         onSnapshot(collection(db, "users"), (snapshot) => {
             const list = document.getElementById('userList');
             list.innerHTML = "";
