@@ -36,12 +36,13 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         #chatBox { 
             scroll-behavior: smooth; 
             display: flex; 
             flex-direction: column;
+            gap: 5px;
         }
         #chatBox::-webkit-scrollbar { width: 4px; }
         #chatBox::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -68,7 +69,7 @@
                 <h2 style="color: #1e3a8a; font-size: 18px; margin: 0;">Secure Support</h2>
             </div>
 
-            <div id="chatBox" style="background:#f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; height: 380px; overflow-y: auto; margin-bottom: 15px;">
+            <div id="chatBox" style="background:#f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; height: 400px; overflow-y: auto; margin-bottom: 15px;">
                 </div>
 
             <textarea id="userMsg" style="height:70px; width: 100%; border-radius: 10px; padding: 12px; border: 1px solid #cbd5e1; font-family: inherit; resize: none; box-sizing: border-box; font-size: 14px;" placeholder="Type your message..."></textarea>
@@ -82,7 +83,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy, serverTimestamp, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -103,25 +104,31 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Listen for all messages belonging to this User ID
+                // FIXED QUERY: No 'orderBy' here to prevent Firebase Indexing errors
                 const q = query(
                     collection(db, "support_tickets"), 
-                    where("userId", "==", user.uid), 
-                    orderBy("timestamp", "asc")
+                    where("userId", "==", user.uid)
                 );
 
                 onSnapshot(q, (snapshot) => {
                     chatBox.innerHTML = `
-                        <div style="align-self: flex-start;">
+                        <div style="align-self: flex-start; width: 100%;">
                             <div class="msg-bubble msg-admin">
                                 <b style="color: #1e3a8a; font-size: 10px; display: block; margin-bottom: 4px;">SYSTEM</b>
-                                Connection established. A verified agent will review your inquiry shortly.
+                                Encrypted channel active. You are now connected to SBA Case Management.
                             </div>
-                            <div class="msg-meta">ENCRYPTED SESSION</div>
+                            <div class="msg-meta">SECURE_SESSION_START</div>
                         </div>
                     `;
 
-                    snapshot.forEach((snapDoc) => {
+                    // MANUAL SORTING: Sort docs by time after receiving them
+                    const sortedDocs = snapshot.docs.sort((a, b) => {
+                        const timeA = a.data().timestamp?.toMillis() || 0;
+                        const timeB = b.data().timestamp?.toMillis() || 0;
+                        return timeA - timeB;
+                    });
+
+                    sortedDocs.forEach((snapDoc) => {
                         const m = snapDoc.data();
                         const isUser = m.sender === "USER";
                         
@@ -133,13 +140,17 @@
 
                         msgWrapper.innerHTML = `
                             <div class="msg-bubble ${isUser ? 'msg-user' : 'msg-admin'}">
-                                ${!isUser ? `<b style="color: #ba0c2f; font-size: 10px; display: block; margin-bottom: 4px;">SBA OFFICIAL</b>` : ''}
+                                ${!isUser ? `<b style="color: #ba0c2f; font-size: 10px; display: block; margin-bottom: 4px;">SBA OFFICIAL AGENT</b>` : ''}
                                 ${m.message}
                             </div>
-                            <div class="msg-meta">${isUser ? 'SENT' : 'RECEIVED'}</div>
+                            <div class="msg-meta" style="text-align: ${isUser ? 'right' : 'left'}">
+                                ${isUser ? 'SENT' : 'RECEIVED'}
+                            </div>
                         `;
                         chatBox.appendChild(msgWrapper);
                     });
+                    
+                    // Force scroll to bottom
                     chatBox.scrollTop = chatBox.scrollHeight;
                 });
             } else {
@@ -154,10 +165,11 @@
             if(!text || !user) return;
 
             sendBtn.disabled = true;
+            sendBtn.innerText = "SENDING...";
 
             try {
                 const userSnap = await getDoc(doc(db, "users", user.uid));
-                const fullName = userSnap.data()?.fullName || "Verified User";
+                const fullName = userSnap.data()?.fullName || "User";
 
                 await addDoc(collection(db, "support_tickets"), {
                     userId: user.uid,
@@ -169,10 +181,11 @@
 
                 userMsg.value = "";
             } catch (e) {
-                console.error(e);
-                alert("Transmission failed. Reconnecting...");
+                console.error("Error sending message:", e);
+                alert("Connection lost. Please try again.");
             } finally {
                 sendBtn.disabled = false;
+                sendBtn.innerText = "SEND MESSAGE";
             }
         };
     </script>
