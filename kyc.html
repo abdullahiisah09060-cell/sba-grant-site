@@ -120,19 +120,23 @@
                     return;
                 }
 
-                // CHECK IF ALREADY SUBMITTED
+                // CHECK STATUS
                 const userSnap = await getDoc(doc(db, "users", user.uid));
                 if (userSnap.exists()) {
                     const userData = userSnap.data();
-                    if (userData.kycStatus === "SUBMITTED" || userData.status === "DOCUMENTS UNDER REVIEW") {
+                    
+                    // LOCK SCREEN ONLY IF SUBMITTED OR APPROVED
+                    // If kycStatus is "DECLINED", this block is skipped and user sees the form
+                    if (userData.kycStatus === "SUBMITTED" || userData.status === "APPROVED") {
                         document.getElementById('main-content').innerHTML = `
-                            <div class="card" style="margin-top: 50px; text-align: center; border-top: 6px solid #f59e0b; border-radius: 16px; padding: 40px 20px; background: white; box-shadow: 0 15px 35px rgba(0,0,0,0.05);">
-                                <span style="font-size: 50px;">⏳</span>
-                                <h2 style="color: #00274c; margin-top: 15px;">Authentication Pending</h2>
+                            <div class="card" style="margin-top: 50px; text-align: center; border-top: 6px solid ${userData.status === "APPROVED" ? '#10b981' : '#f59e0b'}; border-radius: 16px; padding: 40px 20px; background: white; box-shadow: 0 15px 35px rgba(0,0,0,0.05);">
+                                <span style="font-size: 50px;">${userData.status === "APPROVED" ? '✅' : '⏳'}</span>
+                                <h2 style="color: #00274c; margin-top: 15px;">${userData.status === "APPROVED" ? 'Authentication Successful' : 'Authentication Pending'}</h2>
                                 <div class="instruction-box" style="background: #fffbeb; color: #92400e; margin: 20px 0; border: 1px solid #fef3c7; border-radius: 10px; padding: 15px; font-size: 13px;">
-                                    Your identity documents have been received and are currently undergoing a <b>Federal Security Audit</b>. You cannot resubmit while a review is in progress.
+                                    ${userData.status === "APPROVED" 
+                                        ? 'Your identity has been verified. No further action is required.' 
+                                        : 'Your identity documents are currently undergoing a <b>Federal Security Audit</b>. You cannot resubmit while a review is in progress.'}
                                 </div>
-                                <p style="font-size: 13px; color: #64748b;">Average processing time: 24-48 hours.</p>
                                 <button onclick="location.href='dashboard.html'" style="background: #00274c; color: white; padding: 15px; border-radius: 10px; width: 100%; font-weight: 800; border: none; margin-top: 10px; cursor: pointer;">
                                     RETURN TO DASHBOARD
                                 </button>
@@ -226,7 +230,7 @@
                 });
 
                 alert("TRANSMISSION SUCCESS: Your identity packet has been received for federal audit.");
-                window.location.reload(); // Reload to trigger the "Pending" screen
+                window.location.reload(); 
 
             } catch(e) { 
                 console.error(e);
