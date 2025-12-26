@@ -5,46 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SBA MASTER | COMMAND UNIT V8</title>
     <style>
-        body { background: #020617; color: #f8fafc; font-family: sans-serif; margin: 0; }
-        .admin-nav { background: #0f172a; padding: 20px; border-bottom: 4px solid #ef4444; text-align: center; }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        .section-title { font-size: 12px; color: #38bdf8; text-transform: uppercase; letter-spacing: 2px; margin: 30px 0 15px; border-left: 4px solid #ef4444; padding-left: 10px; }
+        body { background: #020617; color: #f8fafc; font-family: sans-serif; margin: 0; padding-bottom: 50px; }
+        .admin-nav { background: #0f172a; padding: 20px; border-bottom: 4px solid #ef4444; text-align: center; position: sticky; top: 0; z-index: 1000; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .section-title { font-size: 12px; color: #38bdf8; text-transform: uppercase; letter-spacing: 2px; margin: 40px 0 15px; border-left: 4px solid #ef4444; padding-left: 10px; font-weight: bold; }
         
-        /* Chat Card Styling */
-        .chat-card { background: #ffffff; color: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .user-header { font-weight: 800; font-size: 14px; color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        
-        .chat-history { height: 250px; overflow-y: auto; background: #f1f5f9; padding: 15px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px; border: 1px solid #cbd5e1; }
-        
-        /* Bubble Fixes */
-        .msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; word-wrap: break-word; position: relative; }
-        .msg.admin { align-self: flex-end; background: #dcf8c6; border: 1px solid #b5e5a4; color: #14532d; }
-        .msg.user { align-self: flex-start; background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b; }
-        
-        .reply-box { margin-top: 15px; display: flex; gap: 10px; }
-        .reply-box input { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; }
-        .send-btn { background: #ef4444; color: white; border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .send-btn:hover { background: #dc2626; }
+        /* Dashboard Tables */
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+        th { text-align: left; color: #94a3b8; padding: 12px; border-bottom: 1px solid #334155; }
+        td { padding: 12px; border-bottom: 1px solid #0f172a; }
 
-        /* Request Stream */
-        .req-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .req-item { background: #1e293b; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; }
+        /* Request Feed Styling */
+        .req-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .req-item { background: #ffffff; color: #0f172a; padding: 20px; border-radius: 8px; border-left: 6px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .view-btn { background: #38bdf8; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin-right: 5px; }
+
+        /* Chat Styling */
+        .chat-card { background: #ffffff; color: #1e293b; border-radius: 12px; padding: 15px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .chat-history { height: 250px; overflow-y: auto; background: #f1f5f9; padding: 12px; border-radius: 6px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 85%; padding: 10px; border-radius: 10px; font-size: 13px; word-wrap: break-word; line-height: 1.4; }
+        .msg.admin { align-self: flex-end; background: #dcf8c6; border: 1px solid #b5e5a4; color: #14532d; }
+        .msg.user { align-self: flex-start; background: #fff; border: 1px solid #cbd5e1; color: #1e293b; }
+
+        /* Controls */
+        input { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 6px; }
+        .reply-box input { background: #fff; color: #000; border: 1px solid #ddd; flex: 1; }
+        .action-btn { background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .decline-btn { background: #ef4444; }
     </style>
 </head>
 <body>
 
     <div class="admin-nav">
-        <h1 style="font-size: 18px; margin: 0;">SBA COMMAND UNIT | CORE V8</h1>
-        <div id="adminEmail" style="font-size: 10px; color: #94a3b8; margin-top: 5px;">CONNECTING...</div>
+        <h1 style="font-size: 18px; margin: 0; letter-spacing: 2px;">SBA COMMAND UNIT | CORE V8</h1>
+        <div id="adminEmail" style="font-size: 10px; color: #94a3b8; margin-top: 5px;">AUTHORIZING SYSTEM...</div>
     </div>
 
     <div class="container">
         
-        <div class="section-title">Support Feed (Live Conversations)</div>
-        <div id="chatFeed"></div>
+        <div class="section-title">Global User Database</div>
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>FULL NAME</th>
+                        <th>BALANCE</th>
+                        <th>STATUS</th>
+                        <th>UID (COPY FOR LEDGER)</th>
+                    </tr>
+                </thead>
+                <tbody id="userList"></tbody>
+            </table>
+        </div>
 
-        <div class="section-title">Incoming Requests (Withdrawals/KYC)</div>
-        <div id="requestFeed" class="req-list"></div>
+        <div class="section-title">Manual Ledger Override</div>
+        <div class="card" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="text" id="targetUid" placeholder="Paste User UID here..." style="flex: 2; min-width: 200px;">
+            <input type="number" id="targetAmount" placeholder="Amount (e.g. 10000)" style="flex: 1; min-width: 150px;">
+            <button onclick="updateBalance()" class="action-btn">UPDATE USER FUNDS</button>
+        </div>
+
+        <div class="section-title">Active Requests (KYC & Withdrawals)</div>
+        <div id="requestFeed" class="req-grid"></div>
+
+        <div class="section-title">Live Support Conversations</div>
+        <div id="chatFeed"></div>
 
     </div>
 
@@ -68,15 +94,102 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === "liger4683@gmail.com") {
-                document.getElementById('adminEmail').innerText = "AUTHORIZED: " + user.email.toUpperCase();
+                document.getElementById('adminEmail').innerText = "AUTHORIZED AGENT: " + user.email.toUpperCase();
             } else { window.location.href = "index.html"; }
         });
 
-        // --- LIVE CHAT LOGIC ---
+        // 1. User List Table
+        onSnapshot(collection(db, "users"), (snap) => {
+            const list = document.getElementById('userList');
+            list.innerHTML = "";
+            snap.forEach(d => {
+                const u = d.data();
+                list.innerHTML += `
+                    <tr>
+                        <td style="color:#38bdf8; font-weight:bold;">${u.fullName || 'No Name'}</td>
+                        <td style="color:#10b981; font-weight:bold;">$${u.balance || '0'}</td>
+                        <td><span style="background:#0f172a; padding:4px 8px; border-radius:4px; font-size:10px;">${u.status || 'PENDING'}</span></td>
+                        <td style="font-family:monospace; font-size:11px; color:#94a3b8;">${d.id}</td>
+                    </tr>`;
+            });
+        });
+
+        // 2. Manual Ledger Update
+        window.updateBalance = async () => {
+            const uid = document.getElementById('targetUid').value.trim();
+            const amt = document.getElementById('targetAmount').value;
+            if(!uid || !amt) return alert("Please provide UID and Amount.");
+            
+            const userRef = doc(db, "users", uid);
+            const userSnap = await getDoc(userRef);
+            
+            if(userSnap.exists()){
+                const currentBal = parseFloat(userSnap.data().balance || 0);
+                const newTotal = currentBal + parseFloat(amt);
+                await updateDoc(userRef, { balance: newTotal });
+                alert("Success: User balance updated to $" + newTotal);
+                document.getElementById('targetAmount').value = "";
+            } else { alert("Error: User UID not found in database."); }
+        };
+
+        // 3. Request Processing (KYC & Withdrawal)
+        onSnapshot(collection(db, "requests"), (snap) => {
+            const feed = document.getElementById('requestFeed');
+            feed.innerHTML = "";
+            snap.forEach(d => {
+                const r = d.data();
+                feed.innerHTML += `
+                    <div class="req-item">
+                        <div style="font-size:10px; color:#64748b; margin-bottom:5px;">ID: ${d.id.substring(0,10)}</div>
+                        <div style="font-weight:bold; color:#1e3a8a; font-size:16px;">${r.type}</div>
+                        <div style="margin:10px 0; font-size:13px;"><b>User:</b> ${r.userName || 'Unknown'}</div>
+                        <div style="font-size:18px; font-weight:900; color:#ef4444; margin-bottom:15px;">${r.amount ? '$'+r.amount : 'KYC VERIFY'}</div>
+                        
+                        ${r.frontId ? `
+                            <div style="margin-bottom:15px;">
+                                <a href="${r.frontId}" target="_blank" class="view-btn">VIEW FRONT ID</a>
+                                <a href="${r.backId}" target="_blank" class="view-btn">VIEW BACK ID</a>
+                            </div>
+                        ` : ''}
+                        
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="processAction('${d.id}', '${r.userId}', 'approve', '${r.type}', '${r.amount}')" class="action-btn" style="flex:1;">APPROVE</button>
+                            <button onclick="processAction('${d.id}', '${r.userId}', 'decline')" class="action-btn decline-btn" style="flex:1;">DECLINE</button>
+                        </div>
+                    </div>`;
+            });
+        });
+
+        window.processAction = async (docId, uid, action, type, amt) => {
+            const userRef = doc(db, "users", uid);
+            if(action === 'approve') {
+                await updateDoc(userRef, { status: (type === 'KYC' ? "IDENTITY VERIFIED" : "WITHDRAWAL SUCCESSFUL") });
+                
+                if(type === 'Withdrawal') {
+                    const snap = await getDoc(userRef);
+                    const newBal = parseFloat(snap.data().balance || 0) - parseFloat(amt);
+                    await updateDoc(userRef, { balance: newBal });
+                    
+                    // Save to transaction history
+                    await addDoc(collection(db, "transactions"), {
+                        userId: uid, 
+                        type: "Withdrawal", 
+                        amount: amt, 
+                        status: "Successful", 
+                        date: new Date().toLocaleDateString()
+                    });
+                }
+            } else {
+                await updateDoc(userRef, { status: "REQUEST DECLINED - SEE SUPPORT" });
+            }
+            await deleteDoc(doc(db, "requests", docId));
+            alert("Request Handled Successfully.");
+        };
+
+        // 4. Live Chat Support
         onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snapshot) => {
             const chatFeed = document.getElementById('chatFeed');
             const groups = {};
-
             snapshot.forEach(snap => {
                 const data = snap.data();
                 if (!groups[data.userId]) groups[data.userId] = { name: data.userName, msgs: [] };
@@ -88,24 +201,21 @@
                 const group = groups[uid];
                 const card = document.createElement('div');
                 card.className = "chat-card";
-                
                 card.innerHTML = `
-                    <div class="user-header">
-                        <span>${group.name}</span>
-                        <span style="font-size: 10px; color: #94a3b8;">ID: ${uid.substring(0,8)}</span>
+                    <div style="font-weight:bold; font-size:13px; margin-bottom:10px; color:#1e3a8a; border-bottom:1px solid #eee; padding-bottom:5px;">
+                        CLIENT: ${group.name.toUpperCase()}
                     </div>
-                    <div class="chat-history" id="scroll-${uid}"></div>
-                    <div class="reply-box">
-                        <input type="text" id="input-${uid}" placeholder="Type message to ${group.name}...">
-                        <button class="send-btn" onclick="window.reply('${uid}', '${group.name}')">SEND</button>
-                    </div>
-                `;
+                    <div class="chat-history" id="chat-${uid}"></div>
+                    <div class="reply-box" style="margin-top:12px; display:flex; gap:8px;">
+                        <input type="text" id="input-${uid}" placeholder="Type reply to ${group.name}...">
+                        <button onclick="window.sendReply('${uid}', '${group.name}')" class="action-btn" style="padding:0 20px;">REPLY</button>
+                    </div>`;
 
-                const history = card.querySelector(`#scroll-${uid}`);
+                const history = card.querySelector(`#chat-${uid}`);
                 group.msgs.forEach(m => {
                     const mDiv = document.createElement('div');
                     mDiv.className = `msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
-                    mDiv.innerText = m.message; // CRITICAL: Fixes the "box inside box" design issue
+                    mDiv.innerText = m.message; // Fixes design spill
                     history.appendChild(mDiv);
                 });
 
@@ -114,49 +224,15 @@
             }
         });
 
-        window.reply = async (uid, name) => {
+        window.sendReply = async (uid, name) => {
             const input = document.getElementById(`input-${uid}`);
             const text = input.value.trim();
             if(!text) return;
 
             await addDoc(collection(db, "support_tickets"), {
-                userId: uid,
-                userName: name,
-                message: text,
-                sender: "ADMIN",
-                timestamp: serverTimestamp()
+                userId: uid, userName: name, message: text, sender: "ADMIN", timestamp: serverTimestamp()
             });
             input.value = "";
-        };
-
-        // --- REQUEST FEED ---
-        onSnapshot(collection(db, "requests"), (snap) => {
-            const feed = document.getElementById('requestFeed');
-            feed.innerHTML = "";
-            snap.forEach(d => {
-                const r = d.data();
-                feed.innerHTML += `
-                    <div class="req-item">
-                        <div style="font-size:11px; color:#38bdf8;">${r.type}</div>
-                        <div style="font-weight:bold; margin:5px 0;">${r.userName}</div>
-                        <div style="font-size:14px; color:#ef4444;">${r.amount ? '$'+r.amount : 'KYC VERIFY'}</div>
-                        <div style="margin-top:10px; display:flex; gap:5px;">
-                            <button onclick="window.process('${d.id}', '${r.userId}', 'approve')" style="flex:1; background:#10b981; border:none; color:white; padding:5px; border-radius:4px; cursor:pointer;">APPROVE</button>
-                            <button onclick="window.process('${d.id}', '${r.userId}', 'decline')" style="flex:1; background:#ef4444; border:none; color:white; padding:5px; border-radius:4px; cursor:pointer;">DECLINE</button>
-                        </div>
-                    </div>`;
-            });
-        });
-
-        window.process = async (docId, uid, action) => {
-            const userRef = doc(db, "users", uid);
-            if(action === 'approve') {
-                await updateDoc(userRef, { status: "PROCESSED / VERIFIED" });
-            } else {
-                await updateDoc(userRef, { status: "REJECTED - CHECK SUPPORT" });
-            }
-            await deleteDoc(doc(db, "requests", docId));
-            alert("Updated successfully.");
         };
     </script>
 </body>
