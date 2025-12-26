@@ -7,50 +7,43 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body { background: #020617; color: #f8fafc; font-family: 'Courier New', Courier, monospace; display: none; }
-        .admin-nav { background: #0f172a; padding: 20px; border-bottom: 4px solid #ef4444; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .admin-nav { background: #0f172a; padding: 20px; border-bottom: 4px solid #ef4444; text-align: center; position: sticky; top: 0; z-index: 1000; }
         .section-title { font-size: 11px; font-weight: 800; color: #38bdf8; margin: 30px 0 12px 0; text-transform: uppercase; letter-spacing: 2px; padding-left: 10px; border-left: 4px solid #ef4444; }
-        .manual-card { background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 20px; }
-        .manual-card input { background: #020617; border: 1px solid #38bdf8; color: #38bdf8 !important; margin-bottom: 12px; font-weight: bold; font-family: monospace; width: 100%; padding: 12px; border-radius: 4px; }
         .req-card { background: #ffffff; color: #0f172a; padding: 18px; border-radius: 8px; margin-bottom: 15px; border-left: 8px solid #f59e0b; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-family: sans-serif; }
-        .req-tag { float: right; font-size: 9px; background: #0f172a; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
-        .img-link { color: #0071bc; font-weight: bold; text-decoration: underline; cursor: pointer; margin-right: 15px; border: 1px solid #0071bc; background: #f0f9ff; padding: 5px 10px; border-radius: 4px; font-size: 11px; margin-top: 10px; display: inline-block; }
-        .btn-flex { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-approve { background: #10b981; color: white; border: none; flex: 1; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; }
-        .btn-decline { background: #ef4444; color: white; border: none; flex: 1; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; }
+        .manual-card { background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 20px; }
+        .manual-card input { background: #020617; border: 1px solid #38bdf8; color: #38bdf8 !important; margin-bottom: 12px; font-weight: bold; width: 100%; padding: 12px; border-radius: 4px; }
         .user-table { background: #0f172a; border-radius: 8px; border: 1px solid #1e293b; overflow: hidden; }
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #1e293b; transition: 0.2s; cursor: pointer; }
-        .user-row:hover { background: #1e293b; }
-        .user-bal { font-weight: 900; color: #10b981; font-size: 15px; }
-        .reply-input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 10px; font-family: sans-serif; color: #000; font-size: 13px; }
-        .send-btn { background: #00274c; color: white; border: none; padding: 10px; border-radius: 6px; margin-top: 5px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase; font-size: 11px; }
-        .chat-box-inner { max-height: 180px; overflow-y: auto; background: #f1f5f9; padding: 10px; border-radius: 6px; margin-top: 8px; border: 1px solid #e2e8f0; }
+        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #1e293b; cursor: pointer; }
+        .reply-input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 10px; font-family: sans-serif; box-sizing: border-box; }
+        .send-btn { background: #00274c; color: white; border: none; padding: 12px; border-radius: 6px; margin-top: 5px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase; }
+        .chat-history-box { max-height: 200px; overflow-y: auto; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; margin: 10px 0; display: flex; flex-direction: column; gap: 8px; }
+        .btn-approve { background: #10b981; color: white; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; flex: 1; }
+        .btn-decline { background: #ef4444; color: white; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; flex: 1; }
     </style>
 </head>
 <body>
     <div class="admin-nav">
         <h1 style="font-size: 14px; color: #ef4444; letter-spacing: 3px;">SBA COMMAND UNIT | CORE V8</h1>
-        <p style="font-size: 10px; margin-top: 5px; color: #94a3b8;">AGENT_ACTIVE: <span id="adminEmailDisplay">...</span></p>
+        <p style="font-size: 10px; margin-top: 5px; color: #94a3b8;">AGENT: <span id="adminEmailDisplay">...</span></p>
     </div>
 
     <div class="container" style="max-width: 600px; padding: 20px; margin: 0 auto;">
         
-        <div class="section-title">Support Inbox (Grouped by User)</div>
-        <div id="adminChatFeed">
-            <p style="text-align:center; font-size:11px; color:#475569;">SCANNING FOR INCOMING TRANSMISSIONS...</p>
-        </div>
-
-        <div class="section-title">Manual Ledger Override</div>
-        <div class="manual-card">
-            <input type="text" id="targetUid" placeholder="TARGET_USER_UID">
-            <input type="text" id="manualStatus" placeholder="NEW_STATUS (e.g. APPROVED)">
-            <input type="text" id="manualAmt" placeholder="ADJUST_BALANCE (e.g. 5000)">
-            <button class="btn-approve" style="width:100%;" onclick="window.manualUpdate()">EXECUTE LEDGER SYNC</button>
-        </div>
+        <div class="section-title">Support Conversations (Grouped)</div>
+        <div id="adminChatFeed"></div>
 
         <div class="section-title">Live Request Stream</div>
         <div id="requestFeed"></div>
 
-        <div class="section-title">Global User Database</div>
+        <div class="section-title">Manual Ledger Override</div>
+        <div class="manual-card">
+            <input type="text" id="targetUid" placeholder="USER_UID">
+            <input type="text" id="manualStatus" placeholder="STATUS (e.g. APPROVED)">
+            <input type="text" id="manualAmt" placeholder="ADD/SUBTRACT AMT (e.g. 5000 or -200)">
+            <button class="btn-approve" style="width:100%;" onclick="window.manualUpdate()">SYNC LEDGER</button>
+        </div>
+
+        <div class="section-title">User Database</div>
         <div class="user-table" id="userList"></div>
     </div>
 
@@ -71,152 +64,119 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
         const MASTER_ADMIN = "liger4683@gmail.com";
 
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === MASTER_ADMIN) {
                 document.body.style.display = "block";
                 document.getElementById('adminEmailDisplay').innerText = user.email.toUpperCase();
-            } else {
-                window.location.href = "index.html";
-            }
+            } else { window.location.href = "index.html"; }
         });
 
-        // REPLIED TO USER LOGIC
-        window.replyToUser = async (userId, userName) => {
-            const replyBox = document.getElementById(`reply-${userId}`);
-            const text = replyBox.value.trim();
-            if(!text) return;
-
-            try {
-                await addDoc(collection(db, "support_tickets"), {
-                    userId: userId,
-                    message: text,
-                    sender: "ADMIN",
-                    timestamp: serverTimestamp(),
-                    userName: "SBA OFFICIAL AGENT"
-                });
-                replyBox.value = "";
-            } catch(e) { alert(e.message); }
-        };
-
-        // GROUPED CHAT LISTENER (Fixes the "20 boxes" problem)
+        // --- FIXED CHAT LOGIC (Grouped by User) ---
         onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snapshot) => {
             const feed = document.getElementById('adminChatFeed');
-            feed.innerHTML = "";
             const groups = {};
 
-            snapshot.forEach(docSnap => {
-                const m = docSnap.data();
-                if (!groups[m.userId]) {
-                    groups[m.userId] = { userName: m.userName, messages: [] };
-                }
-                groups[m.userId].messages.push(m);
+            snapshot.forEach(snap => {
+                const data = snap.data();
+                if (!groups[data.userId]) groups[data.userId] = { name: data.userName, msgs: [] };
+                groups[data.userId].msgs.push(data);
             });
 
+            feed.innerHTML = "";
             for (const uid in groups) {
                 const group = groups[uid];
                 feed.innerHTML += `
                     <div class="req-card" style="border-left: 8px solid #38bdf8;">
-                        <div style="font-size:10px; color:#64748b; font-weight:bold;">CHAT WITH: ${group.userName} (${uid.substring(0,5)})</div>
-                        <div class="chat-box-inner">
-                            ${group.messages.map(msg => `
-                                <div style="margin-bottom:8px; font-size:12px;">
-                                    <b style="color:${msg.sender === 'ADMIN' ? '#ef4444' : '#1e3a8a'}">${msg.sender}:</b> ${msg.message}
+                        <div style="font-weight:bold; font-size:12px; color:#1e3a8a;">USER: ${group.name}</div>
+                        <div class="chat-history-box">
+                            ${group.msgs.map(m => `
+                                <div style="font-size:12px; align-self: ${m.sender === 'ADMIN' ? 'flex-end' : 'flex-start'}; background: ${m.sender === 'ADMIN' ? '#dcf8c6' : '#fff'}; padding: 6px 10px; border-radius: 8px; border: 1px solid #eee;">
+                                    <b>${m.sender}:</b> ${m.message}
                                 </div>
                             `).join('')}
                         </div>
-                        <textarea id="reply-${uid}" class="reply-input" placeholder="Type response to ${group.userName}..."></textarea>
-                        <button class="send-btn" onclick="window.replyToUser('${uid}', '${group.userName}')">SEND OFFICIAL REPLY</button>
+                        <textarea id="reply-${uid}" class="reply-input" placeholder="Message to ${group.name}..."></textarea>
+                        <button class="send-btn" onclick="window.sendReply('${uid}', '${group.name}')">SEND REPLY</button>
                     </div>`;
             }
         });
 
-        // IMAGE VIEWER
-        window.viewImg = (data) => {
-            const w = window.open();
-            w.document.write(`<body style="margin:0; background:#000; display:flex; justify-content:center; align-items:center;"><img src="${data}" style="max-width:100%; border:5px solid white;"></body>`);
+        window.sendReply = async (uid, name) => {
+            const box = document.getElementById(`reply-${uid}`);
+            const text = box.value.trim();
+            if(!text) return;
+            await addDoc(collection(db, "support_tickets"), {
+                userId: uid, userName: name, message: text, sender: "ADMIN", timestamp: serverTimestamp()
+            });
+            box.value = "";
         };
 
-        // MANUAL LEDGER SYNC
-        window.manualUpdate = async () => {
-            const uid = document.getElementById('targetUid').value.trim();
-            const amtStr = document.getElementById('manualAmt').value.replace(/,/g, '');
-            const amt = parseFloat(amtStr) || 0;
-            const status = document.getElementById('manualStatus').value.trim();
-            if(!uid) return alert("UID REQUIRED");
-            try {
-                const userRef = doc(db, "users", uid);
-                const snap = await getDoc(userRef);
-                if(!snap.exists()) return alert("USER NOT FOUND");
-                const currentBal = parseFloat(snap.data().balance.toString().replace(/,/g, '')) || 0;
-                const newTotal = (currentBal + amt).toLocaleString('en-US', {minimumFractionDigits: 2});
-                let updates = { balance: newTotal };
-                if(status) updates.status = status;
-                await updateDoc(userRef, updates);
-                alert("SYNC COMPLETE: Total Balance is now $" + newTotal);
-            } catch(e) { alert("ERROR: " + e.message); }
-        };
-
-        // REQUEST STREAM (KYC & WITHDRAWALS)
-        onSnapshot(collection(db, "requests"), (snapshot) => {
+        // --- REQUEST STREAM (KYC/WITHDRAW) ---
+        onSnapshot(collection(db, "requests"), (snap) => {
             const feed = document.getElementById('requestFeed');
             feed.innerHTML = "";
-            snapshot.forEach((r) => {
-                const req = r.data();
+            snap.forEach(docSnap => {
+                const req = docSnap.data();
                 const isKYC = req.type === "KYC_SUBMISSION";
                 feed.innerHTML += `
                     <div class="req-card" style="border-left-color: ${isKYC ? '#38bdf8' : '#ef4444'}">
-                        <span class="req-tag">${req.type}</span>
-                        <div style="font-size:12px;"><b>USER:</b> ${req.userName}</div>
-                        ${isKYC ? `
-                            <p style="font-size:10px; color:#64748b;">ID: ${req.idType} | ${req.idNumber}</p>
-                            <button onclick="window.viewImg('${req.frontImg}')" class="img-link">VIEW FRONT</button>
-                            <button onclick="window.viewImg('${req.backImg}')" class="img-link">VIEW BACK</button>
-                        ` : `
-                             <div style="font-size:22px; color:#ef4444; font-weight:900;">-$${req.amount}</div>
-                             <p style="font-size:10px; color:#64748b;">${req.method} | ${req.details}</p>
-                        `}
-                        <div class="btn-flex">
-                            <button class="btn-approve" onclick="window.processReq('${r.id}', '${req.userId}', '${req.amount || 0}', 'approve', '${req.type}')">APPROVE</button>
-                            <button class="btn-decline" onclick="window.processReq('${r.id}', '${req.userId}', '0', 'decline', '${req.type}')">DECLINE</button>
+                        <div style="font-size:11px; font-weight:bold;">${req.type} | ${req.userName}</div>
+                        ${isKYC ? `<button onclick="window.open('${req.frontImg}')" style="font-size:10px; margin-top:5px; cursor:pointer;">VIEW ID FRONT</button>` : `<div style="font-size:20px; color:red; font-weight:bold;">-$${req.amount}</div>`}
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button class="btn-approve" onclick="window.handleReq('${docSnap.id}', '${req.userId}', '${req.amount || 0}', 'approve', '${req.type}')">APPROVE</button>
+                            <button class="btn-decline" onclick="window.handleReq('${docSnap.id}', '${req.userId}', '0', 'decline', '${req.type}')">DECLINE</button>
                         </div>
                     </div>`;
             });
         });
 
-        // PROCESS REQUESTS
-        window.processReq = async (reqId, userId, amt, action, type) => {
-            const userRef = doc(db, "users", userId);
-            try {
-                if (action === 'approve') {
-                    if (type === "WITHDRAWAL") {
-                        const snap = await getDoc(userRef);
-                        const currentBal = parseFloat(snap.data().balance.toString().replace(/,/g, '')) || 0;
-                        const finalBal = (currentBal - parseFloat(amt)).toLocaleString('en-US', {minimumFractionDigits: 2});
-                        await updateDoc(userRef, { balance: finalBal, status: "TRANSFER COMPLETED" });
-                    } else {
-                        await updateDoc(userRef, { status: "IDENTITY VERIFIED", kycStatus: "VERIFIED" });
-                    }
+        window.handleReq = async (id, uid, amt, action, type) => {
+            const userRef = doc(db, "users", uid);
+            if (action === 'approve') {
+                if (type === "WITHDRAWAL") {
+                    const snap = await getDoc(userRef);
+                    const current = parseFloat(snap.data().balance.toString().replace(/,/g, '')) || 0;
+                    const final = (current - parseFloat(amt)).toLocaleString('en-US', {minimumFractionDigits: 2});
+                    await updateDoc(userRef, { balance: final, status: "TRANSFER COMPLETED" });
                 } else {
-                    await updateDoc(userRef, { status: "ACTION REQUIRED / DOCS REJECTED" });
+                    await updateDoc(userRef, { status: "IDENTITY VERIFIED", kycStatus: "VERIFIED" });
                 }
-                await deleteDoc(doc(db, "requests", reqId));
-            } catch(e) { alert("ERROR: " + e.message); }
+            } else {
+                await updateDoc(userRef, { status: "REJECTED - CHECK SUPPORT" });
+            }
+            await deleteDoc(doc(db, "requests", id));
         };
 
-        // GLOBAL DATABASE
-        onSnapshot(collection(db, "users"), (snapshot) => {
+        // --- MANUAL OVERRIDE ---
+        window.manualUpdate = async () => {
+            const uid = document.getElementById('targetUid').value.trim();
+            const amt = parseFloat(document.getElementById('manualAmt').value) || 0;
+            const status = document.getElementById('manualStatus').value.trim();
+            if(!uid) return alert("Need UID");
+            const userRef = doc(db, "users", uid);
+            const snap = await getDoc(userRef);
+            if(!snap.exists()) return alert("User Not Found");
+            const current = parseFloat(snap.data().balance.toString().replace(/,/g, '')) || 0;
+            const final = (current + amt).toLocaleString('en-US', {minimumFractionDigits: 2});
+            let up = { balance: final };
+            if(status) up.status = status;
+            await updateDoc(userRef, up);
+            alert("Success: New Balance $" + final);
+        };
+
+        // --- USER LIST ---
+        onSnapshot(collection(db, "users"), (snap) => {
             const list = document.getElementById('userList');
             list.innerHTML = "";
-            snapshot.forEach((u) => {
-                const data = u.data();
-                if(data.email === MASTER_ADMIN) return;
+            snap.forEach(u => {
+                const d = u.data();
+                if(d.email === MASTER_ADMIN) return;
                 list.innerHTML += `
                     <div class="user-row" onclick="document.getElementById('targetUid').value='${u.id}'">
-                        <div style="font-size:12px;"><b>${data.fullName}</b><br><small>UID: ${u.id.substring(0,8)} | ${data.status}</small></div>
-                        <div class="user-bal">$${data.balance}</div>
+                        <div style="font-size:12px;"><b>${d.fullName}</b><br><small>${u.id.substring(0,8)}</small></div>
+                        <div style="font-weight:bold; color:#10b981;">$${d.balance}</div>
                     </div>`;
             });
         });
