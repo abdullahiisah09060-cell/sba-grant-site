@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -120,6 +119,7 @@
                         maximumFractionDigits: 2
                     });
                     
+                    // Normalize status for comparisons
                     const kycStatus = (data.kycStatus || "PENDING").toUpperCase();
                     const pill = document.getElementById('statusPill');
                     const applyBtn = document.getElementById('applyBtn');
@@ -128,6 +128,8 @@
 
                     // RESET CLASSES
                     kycBtn.classList.remove('is-done', 'is-error', 'is-locked');
+                    applyBtn.classList.remove('is-locked');
+                    transferBtn.classList.remove('is-locked');
                     pill.className = "status-pill";
 
                     if(kycStatus === "APPROVED") {
@@ -137,27 +139,31 @@
                         kycBtn.classList.add('is-done');
                         kycBtn.onclick = () => alert("Identity Verification is complete.");
                         
-                        applyBtn.classList.remove('is-locked');
                         applyBtn.onclick = () => location.href = 'apply.html';
 
                         if(balance > 0) {
-                            transferBtn.classList.remove('is-locked');
                             transferBtn.onclick = () => location.href = 'transfer.html';
                         } else {
                             transferBtn.classList.add('is-locked');
                             transferBtn.onclick = () => alert("FUNDING REQUIRED: Allocation $0.00.");
                         }
                     } 
-                    else if (kycStatus === "REJECTED" || kycStatus === "DENIED") {
+                    else if (kycStatus === "REJECTED" || kycStatus === "DECLINED" || kycStatus === "DENIED") {
                         pill.innerText = "● VERIFICATION REJECTED";
                         pill.className = "status-pill status-rejected";
                         kycBtn.innerHTML = "<span>⚠️</span><b>Try Again</b>";
                         kycBtn.classList.add('is-error');
-                        kycBtn.onclick = () => location.href = 'kyc.html'; // UNLOCKED
+                        kycBtn.onclick = () => location.href = 'kyc.html'; // NOW UNLOCKED
 
                         applyBtn.classList.add('is-locked');
-                        applyBtn.onclick = () => alert("REJECTED: Please re-submit valid identification.");
+                        applyBtn.onclick = () => alert("REJECTED: Please re-submit valid identification to unlock applications.");
                         transferBtn.classList.add('is-locked');
+                    }
+                    else if (kycStatus === "PENDING" && (data.status === "PENDING AUDIT" || data.status === "ID VERIFIED FAILED")) {
+                         pill.innerText = "● AUDIT IN PROGRESS";
+                         kycBtn.onclick = () => location.href = 'kyc.html';
+                         applyBtn.classList.add('is-locked');
+                         transferBtn.classList.add('is-locked');
                     }
                     else {
                         pill.innerText = "● ELIGIBILITY: PENDING KYC";
@@ -169,8 +175,8 @@
             });
 
             // 2. ACTIVITY LOG LISTENER
-            const q = query(collection(db, "requests"), where("userId", "==", user.uid));
-            onSnapshot(q, (snap) => {
+            const qry = query(collection(db, "requests"), where("userId", "==", user.uid));
+            onSnapshot(qry, (snap) => {
                 const logBox = document.getElementById('activityLog');
                 if(snap.empty) {
                     logBox.innerHTML = `<div class="log-item"><div><b style="font-size:10px;">Security Handshake</b><br><small style="font-size:8px;">CONNECTION SECURE</small></div><div style="text-align:right;"><b style="font-size:10px; color:#10b981;">ACTIVE</b></div></div>`;
@@ -185,7 +191,7 @@
                     const status = (r.status || 'PENDING').toUpperCase();
                     let statusColor = "#f59e0b";
                     if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) statusColor = "#10b981";
-                    if (["DENIED", "FAILED", "REJECTED"].includes(status)) statusColor = "#ef4444";
+                    if (["DENIED", "FAILED", "REJECTED", "DECLINED"].includes(status)) statusColor = "#ef4444";
 
                     logBox.innerHTML += `
                         <div class="log-item">
