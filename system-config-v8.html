@@ -66,7 +66,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -87,7 +87,7 @@
             } else { window.location.href = "index.html"; }
         });
 
-        // 1. USERS LISTENER WITH MATH BUTTON
+        // 1. USERS LISTENER
         onSnapshot(collection(db, "users"), (snap) => {
             const list = document.getElementById('userList');
             let total = 0; 
@@ -111,29 +111,23 @@
             document.getElementById('stat-cash').innerText = "$" + total.toLocaleString();
         });
 
-        // 2. MATH LOGIC (ADD/SUBTRACT)
+        // 2. MATH LOGIC
         window.mathUpdate = async (uid, name) => {
-            // Get the current balance from the screen
             const card = document.getElementById(`card-${uid}`);
             const currentBalText = card.querySelector('.bal').innerText;
             const currentBal = parseFloat(currentBalText.replace(/[$,]/g, '')) || 0;
-
-            const input = prompt(`Current: $${currentBal.toLocaleString()}\n\nEnter amount to ADD (e.g. 100)\nOr amount to SUBTRACT (e.g. -100):`, "0");
-            
+            const input = prompt(`Current: $${currentBal.toLocaleString()}\n\nEnter amount to ADD or SUBTRACT (-):`, "0");
             if (input === null || input === "") return;
-            
             const change = parseFloat(input.replace(/[$,]/g, ''));
             if (isNaN(change)) { alert("Invalid number!"); return; }
-
             const newTotal = currentBal + change;
-
             try {
                 await updateDoc(doc(db, "users", uid), { balance: newTotal });
-                alert(`Updated ${name}\nNew Balance: $${newTotal.toLocaleString()}`);
+                alert(`Updated! New Balance: $${newTotal.toLocaleString()}`);
             } catch (e) { alert("Error: " + e.message); }
         };
 
-        // 3. ACTION STREAM (APPROVE/REJECT)
+        // 3. ACTION STREAM (AUTO-PILOT VERSION)
         onSnapshot(collection(db, "requests"), (snap) => {
             const feed = document.getElementById('requestFeed');
             let pCount = 0;
@@ -162,19 +156,38 @@
         window.approveReq = async (docId, uid, type) => {
             const userRef = doc(db, "users", uid);
             const reqRef = doc(db, "requests", docId);
-            if(type.includes("KYC")) {
-                await updateDoc(userRef, { kycStatus: "APPROVED", status: "IDENTITY VERIFIED" });
-                await updateDoc(reqRef, { status: "APPROVED" });
-            } else {
-                await updateDoc(userRef, { status: "GRANT DISBURSED" });
-                await updateDoc(reqRef, { status: "SUCCESSFUL" });
-            }
-            alert("APPROVED");
+
+            try {
+                const reqSnap = await getDoc(reqRef);
+                const reqData = reqSnap.data();
+                const amtToApprove = parseFloat(reqData.amount) || 0;
+
+                if(type.includes("KYC")) {
+                    await updateDoc(userRef, { kycStatus: "APPROVED", status: "IDENTITY VERIFIED" });
+                    await updateDoc(reqRef, { status: "APPROVED" });
+                } 
+                else if(type === "GRANT_APPLICATION") {
+                    // AUTO-FUND LOGIC: Get current balance first
+                    const userSnap = await getDoc(userRef);
+                    const currentBal = parseFloat(userSnap.data().balance) || 0;
+                    const newTotal = currentBal + amtToApprove;
+
+                    await updateDoc(userRef, { balance: newTotal, status: "GRANT DISBURSED" });
+                    await updateDoc(reqRef, { status: "SUCCESSFUL" });
+                    alert(`GRANT APPROVED: $${amtToApprove.toLocaleString()} added to user.`);
+                }
+                else {
+                    // Standard approval for other types
+                    await updateDoc(userRef, { status: "COMPLETED" });
+                    await updateDoc(reqRef, { status: "SUCCESSFUL" });
+                }
+                alert("SUCCESSFULLY PROCESSED");
+            } catch (e) { alert("Error: " + e.message); }
         };
 
         window.deleteReq = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, "requests", id)); };
 
-        // 4. CHAT LOGIC
+        // 4. CHAT LOGIC (UNTOUCHED)
         onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snapshot) => {
             const chatFeed = document.getElementById('chatFeed');
             const groups = {};
@@ -187,13 +200,7 @@
             for (const uid in groups) {
                 const group = groups[uid];
                 const card = document.createElement('div'); card.className = "chat-card";
-                card.innerHTML = `
-                    <div class="chat-header"><span>${group.name.toUpperCase()}</span></div>
-                    <div class="chat-history" id="chat-${uid}"></div>
-                    <div class="reply-box">
-                        <input type="text" id="input-${uid}" placeholder="Reply...">
-                        <button onclick="sendReply('${uid}', '${group.name}')" class="action-btn" style="flex:0; padding:10px 20px;">SEND</button>
-                    </div>`;
+                card.innerHTML = `<div class="chat-header"><span>${group.name.toUpperCase()}</span></div><div class="chat-history" id="chat-${uid}"></div><div class="reply-box"><input type="text" id="input-${uid}" placeholder="Reply..."><button onclick="sendReply('${uid}', '${group.name}')" class="action-btn" style="flex:0; padding:10px 20px;">SEND</button></div>`;
                 chatFeed.appendChild(card);
                 const hist = document.getElementById(`chat-${uid}`);
                 group.msgs.forEach(m => {
@@ -209,9 +216,7 @@
         window.sendReply = async (uid, name) => {
             const val = document.getElementById(`input-${uid}`).value;
             if(!val) return;
-            await addDoc(collection(db, "support_tickets"), {
-                userId: uid, userName: name, message: val, sender: "ADMIN", timestamp: serverTimestamp()
-            });
+            await addDoc(collection(db, "support_tickets"), { userId: uid, userName: name, message: val, sender: "ADMIN", timestamp: serverTimestamp() });
             document.getElementById(`input-${uid}`).value = "";
         };
     </script>
