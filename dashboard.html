@@ -18,9 +18,18 @@
         .balance-section {
             background: linear-gradient(135deg, #00274c 0%, #004a91 100%);
             margin: 15px; padding: 25px; border-radius: 12px; color: white; box-shadow: 0 8px 20px rgba(0,39,76,0.15);
+            position: relative; overflow: hidden;
         }
 
-        #userBalance { letter-spacing: -1px; transition: all 0.5s ease; }
+        /* Federal Pulse Animation */
+        .balance-section::after {
+            content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            animation: shield-sweep 3s infinite;
+        }
+        @keyframes shield-sweep { 100% { left: 200%; } }
+
+        .case-number { font-size: 10px; opacity: 0.7; font-family: monospace; margin-top: 5px; letter-spacing: 1px; }
 
         .status-pill { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; margin-top: 12px; background: rgba(255,255,255,0.2); }
         .status-verified { background: #10b981 !important; }
@@ -54,6 +63,7 @@
     <div class="balance-section">
         <p style="margin:0; font-size:9px; text-transform:uppercase; letter-spacing:1px; opacity:0.8;">Current Grant Allocation</p>
         <h1 id="userBalance" style="font-size:32px; margin:8px 0; font-weight: 800;">$0.00</h1>
+        <div id="caseId" class="case-number">CASE ID: SYNCING...</div>
         <div id="statusPill" class="status-pill">INITIALIZING...</div>
     </div>
 
@@ -94,7 +104,9 @@
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
 
-            // 1. DYNAMIC USER DATA LISTENER
+            // Update Case ID display
+            document.getElementById('caseId').innerText = `CASE ID: SBA-${user.uid.substring(0,8).toUpperCase()}-2026`;
+
             onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
@@ -118,7 +130,6 @@
                         pill.className = "status-pill status-verified";
                         kycBtn.innerHTML = "<span>✅</span><b>Verified</b>";
                         kycBtn.classList.add('is-done');
-                        kycBtn.onclick = () => alert("Identity Verification is complete.");
                         applyBtn.classList.remove('is-locked');
                         applyBtn.onclick = () => location.href = 'apply.html';
 
@@ -127,21 +138,19 @@
                             transferBtn.onclick = () => location.href = 'transfer.html';
                         } else {
                             transferBtn.classList.add('is-locked');
-                            transferBtn.onclick = () => alert("FUNDING REQUIRED: Your grant allocation is currently $0.00.");
+                            transferBtn.onclick = () => alert("FUNDING REQUIRED: Allocation $0.00.");
                         }
                     } else {
                         pill.innerText = "● ELIGIBILITY: PENDING KYC";
                         pill.className = "status-pill";
                         kycBtn.onclick = () => location.href = 'kyc.html';
                         applyBtn.classList.add('is-locked');
-                        applyBtn.onclick = () => alert("VERIFICATION REQUIRED: Please complete KYC first.");
                         transferBtn.classList.add('is-locked');
-                        transferBtn.onclick = () => alert("LOCKED: Complete verification to enable transfers.");
                     }
                 }
             });
 
-            // 2. ACTIVITY LOG LISTENER (CLIENT-SIDE SORT)
+            // Activity Log
             const q = query(collection(db, "requests"), where("userId", "==", user.uid));
             onSnapshot(q, (snap) => {
                 const logBox = document.getElementById('activityLog');
@@ -149,10 +158,8 @@
                     logBox.innerHTML = `<div class="log-item"><div><b style="font-size:10px;">Security Handshake</b><br><small style="font-size:8px;">CONNECTION SECURE</small></div><div style="text-align:right;"><b style="font-size:10px; color:#10b981;">ACTIVE</b></div></div>`;
                     return;
                 }
-
-                // Convert snap to array and SORT BY TIMESTAMP (Newest first)
                 const items = [];
-                snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+                snap.forEach(d => items.push({ id: d.id, ...d.data() }));
                 items.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
                 logBox.innerHTML = "";
