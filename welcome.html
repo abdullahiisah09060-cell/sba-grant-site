@@ -20,15 +20,15 @@
             display: flex; justify-content: center; align-items: center; border: 2px solid var(--sba-green);
         }
 
-        /* The "Official Letter" Box */
         .allocation-letter {
             background: #fff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;
             text-align: left; margin: 25px 0; position: relative; overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
         }
         .allocation-letter::before {
             content: "OFFICIAL"; position: absolute; top: 10px; right: -25px;
             transform: rotate(45deg); background: #fee2e2; color: #ef4444;
-            font-size: 10px; font-weight: 900; padding: 5px 30px;
+            font-size: 10px; font-weight: 900; padding: 5px 30px; border: 1px dashed #ef4444;
         }
 
         .step-row { display: flex; gap: 15px; margin-bottom: 20px; text-align: left; }
@@ -36,13 +36,16 @@
             width: 28px; height: 28px; background: #f1f5f9; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
             font-weight: 900; color: var(--sba-blue); font-size: 12px; flex-shrink: 0;
+            border: 1px solid #cbd5e1;
         }
 
         .action-btn {
             background: var(--sba-blue); color: white; padding: 18px; border-radius: 10px;
             width: 100%; font-weight: 800; border: none; cursor: pointer;
             text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;
+            transition: 0.3s;
         }
+        .action-btn:hover { background: #003a70; }
     </style>
 </head>
 <body>
@@ -53,7 +56,7 @@
     </div>
 
     <div class="nav-header">
-        <h1 style="color:white; margin:0; font-size:14px; letter-spacing:2px;">REGISTRATION SUCCESS</h1>
+        <h1 style="color:white; margin:0; font-size:14px; letter-spacing:2px; font-weight: 900;">REGISTRATION SUCCESS</h1>
     </div>
 
     <div class="container">
@@ -64,14 +67,14 @@
 
             <div class="allocation-letter">
                 <p style="font-size: 10px; color: #94a3b8; margin: 0; font-weight: 700;">MEMORANDUM FOR:</p>
-                <p id="userName" style="font-size: 14px; font-weight: 900; color: var(--sba-blue); margin: 5px 0 15px;">AUTHENTICATING...</p>
+                <p id="userName" style="font-size: 14px; font-weight: 900; color: var(--sba-blue); margin: 5px 0 15px;">SECURE LOOKUP...</p>
                 
                 <p style="font-size: 11px; color: #475569; line-height: 1.5; margin-bottom: 10px;">
-                    This serves as formal notice that based on your 2026 application profile, the following federal grant allocation has been reserved:
+                    This serves as formal notice that based on your 2026 registration profile, a federal grant allocation has been provisionally reserved under your SSN/EIN:
                 </p>
                 
                 <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border-left: 4px solid var(--sba-blue);">
-                    <span style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase;">Reserved Amount:</span>
+                    <span style="font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase;">Current Allocation:</span>
                     <div id="userBal" style="font-size: 24px; font-weight: 900; color: var(--sba-blue);">$0.00</div>
                 </div>
             </div>
@@ -80,23 +83,24 @@
                 <div class="step-num">1</div>
                 <div>
                     <b style="font-size: 12px; color: var(--sba-blue);">IDENTITY VERIFICATION</b>
-                    <p style="font-size: 11px; color: #64748b; margin: 4px 0;">Upload your state-issued ID to satisfy Patriot Act compliance.</p>
+                    <p style="font-size: 11px; color: #64748b; margin: 4px 0;">Satisfy Patriot Act compliance by providing valid government-issued identification.</p>
                 </div>
             </div>
 
             <div class="step-row">
                 <div class="step-num">2</div>
                 <div>
-                    <b style="font-size: 12px; color: var(--sba-blue);">FUNDS DISBURSEMENT</b>
-                    <p style="font-size: 11px; color: #64748b; margin: 4px 0;">Connect your business or personal checking account for FedWire transfer.</p>
+                    <b style="font-size: 12px; color: var(--sba-blue);">DISBURSEMENT SETUP</b>
+                    <p style="font-size: 11px; color: #64748b; margin: 4px 0;">Configure your Electronic Funds Transfer (EFT) destination in the secure ledger.</p>
                 </div>
             </div>
 
-            <button onclick="location.href='dashboard.html'" class="action-btn">Open My Secure Ledger</button>
+            <button onclick="location.href='dashboard.html'" class="action-btn">Enter Secure Portal</button>
         </div>
 
         <p style="text-align: center; font-size: 9px; color: #94a3b8; margin-top: 25px; font-family: monospace;">
-            SBA_CORE_TX_ID: <span id="sessionID"></span>
+            SBA_CORE_TX_ID: <span id="sessionID"></span><br>
+            ENCRYPTION: AES-256-GCM
         </p>
     </div>
 
@@ -121,12 +125,22 @@
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
             
-            // Fetch User Data from Firestore to show on the letter
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if(snap.exists()) {
-                const data = snap.data();
-                document.getElementById('userName').innerText = data.fullName.toUpperCase();
-                document.getElementById('userBal').innerText = "$" + data.balance;
+            try {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if(snap.exists()) {
+                    const data = snap.data();
+                    // Formal name formatting
+                    document.getElementById('userName').innerText = data.fullName.toUpperCase();
+                    
+                    // Number formatting for the balance
+                    const balance = parseFloat(data.balance || 0);
+                    document.getElementById('userBal').innerText = "$" + balance.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            } catch (error) {
+                console.error("Profile lookup failed");
             }
         });
 
