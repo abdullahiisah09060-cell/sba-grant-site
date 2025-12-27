@@ -19,6 +19,8 @@
             margin: 15px; padding: 25px; border-radius: 12px; color: white; box-shadow: 0 8px 20px rgba(0,39,76,0.15);
         }
 
+        #userBalance { letter-spacing: -1px; transition: all 0.5s ease; }
+
         .status-pill { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; margin-top: 12px; background: rgba(255,255,255,0.2); }
         .status-verified { background: #10b981 !important; }
 
@@ -73,7 +75,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -95,27 +97,18 @@
             onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
-                    
-                    // --- BULLETPROOF BALANCE LOGIC ---
                     let rawValue = data.balance;
-                    
-                    // If balance is missing or null, set to 0
                     if (rawValue === undefined || rawValue === null) rawValue = 0;
-                    
-                    // If balance is a string (e.g. "1,000"), clean it
                     if (typeof rawValue === 'string') {
                         rawValue = rawValue.replace(/[$,]/g, '');
                     }
-                    
                     const balance = parseFloat(rawValue) || 0;
 
-                    // Update UI
                     document.getElementById('userBalance').innerText = "$" + balance.toLocaleString('en-US', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
                     });
                     
-                    // --- STATUS LOGIC ---
                     const kycDone = data.kycStatus === "APPROVED" || (data.status && data.status.includes("VERIFIED"));
                     const pill = document.getElementById('statusPill');
                     const applyBtn = document.getElementById('applyBtn');
@@ -128,7 +121,6 @@
                         kycBtn.innerHTML = "<span>✅</span><b>Verified</b>";
                         kycBtn.classList.add('is-done');
                         kycBtn.onclick = () => alert("Identity Verification is complete.");
-                        
                         applyBtn.classList.remove('is-locked');
                         applyBtn.onclick = () => location.href = 'apply.html';
 
@@ -149,12 +141,15 @@
                         transferBtn.onclick = () => alert("LOCKED: Complete verification to enable transfers.");
                     }
                 }
-            }, (error) => {
-                console.error("Snapshot error:", error);
             });
 
-            // 2. ACTIVITY LOG LISTENER
-            const q = query(collection(db, "requests"), where("userId", "==", user.uid));
+            // 2. ACTIVITY LOG LISTENER (FIXED: DESCENDING ORDER)
+            const q = query(
+                collection(db, "requests"), 
+                where("userId", "==", user.uid),
+                orderBy("timestamp", "desc")
+            );
+
             onSnapshot(q, (snap) => {
                 const logBox = document.getElementById('activityLog');
                 if(snap.empty) {
@@ -165,10 +160,9 @@
                 snap.forEach(d => {
                     const r = d.data();
                     const status = (r.status || 'PENDING').toUpperCase();
-                    
-                    let statusColor = "#f59e0b"; // Orange
-                    if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) statusColor = "#10b981"; // Green
-                    if (["DENIED", "FAILED", "REJECTED"].includes(status)) statusColor = "#ef4444"; // Red
+                    let statusColor = "#f59e0b";
+                    if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) statusColor = "#10b981";
+                    if (["DENIED", "FAILED", "REJECTED"].includes(status)) statusColor = "#ef4444";
 
                     logBox.innerHTML += `
                         <div class="log-item">
