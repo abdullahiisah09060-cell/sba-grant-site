@@ -26,7 +26,7 @@
         input:focus { outline: none; border-color: var(--sba-accent); background: white; box-shadow: 0 0 0 3px rgba(0,113,188,0.1); }
 
         .wire-btn { width: 100%; background: var(--sba-blue); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: 800; font-size: 13px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px; }
-        .wire-btn:active { transform: scale(0.98); opacity: 0.9; }
+        .wire-btn:disabled { background: #94a3b8; cursor: not-allowed; }
 
         .security-notice { font-size: 9px; color: #64748b; line-height: 1.5; margin-top: 20px; padding: 12px; background: #f1f5f9; border-radius: 6px; border: 1px solid #e2e8f0; }
     </style>
@@ -49,7 +49,7 @@
             <div class="balance-amt" id="displayBalance">$0.00</div>
         </div>
 
-        <div class="transfer-form" id="transferForm">
+        <div class="transfer-form">
             <div class="form-group">
                 <label>Receiving Institution (Bank Name)</label>
                 <input type="text" id="bankName" placeholder="e.g. JPMorgan Chase" required>
@@ -78,7 +78,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -98,34 +98,41 @@
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
 
-            // 1. Sync Balance
+            // Sync User Balance
             onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (snap.exists()) {
                     let raw = snap.data().balance || 0;
-                    if(typeof raw === 'string') raw = raw.replace(/[$,]/g, '');
                     currentBalance = parseFloat(raw);
-                    document.getElementById('displayBalance').innerText = "$" + currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    document.getElementById('displayBalance').innerText = "$" + currentBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
                 }
             });
 
-            // 2. Handle Transfer
+            // Handle Debit and Request
             document.getElementById('initiateBtn').onclick = async () => {
                 const amt = parseFloat(document.getElementById('amount').value);
                 const bName = document.getElementById('bankName').value;
                 const rNum = document.getElementById('routing').value;
                 const aNum = document.getElementById('account').value;
 
-                if (!bName || !rNum || !aNum || !amt) { alert("Please complete all federal routing fields."); return; }
-                if (amt > currentBalance) { alert("INSUFFICIENT FUNDS: Requested amount exceeds available grant allocation."); return; }
+                if (!bName || !rNum || !aNum || !amt) { alert("Please complete all fields."); return; }
+                if (amt > currentBalance) { alert("INSUFFICIENT FUNDS"); return; }
                 if (amt <= 0) { alert("Invalid amount."); return; }
 
-                document.getElementById('initiateBtn').innerText = "SECURING LINE...";
-                document.getElementById('initiateBtn').disabled = true;
+                const btn = document.getElementById('initiateBtn');
+                btn.innerText = "DEBITING ACCOUNT...";
+                btn.disabled = true;
 
                 try {
+                    // 1. INSTANT DEBIT: Subtract money from balance immediately
+                    const newBalance = currentBalance - amt;
+                    const userRef = doc(db, "users", user.uid);
+                    await updateDoc(userRef, { balance: newBalance });
+
+                    // 2. LOG REQUEST: Create a record for the Admin
                     await addDoc(collection(db, "requests"), {
                         userId: user.uid,
-                        type: "TRANSFER",
+                        userName: user.email,
+                        type: "WIRE TRANSFER",
                         bankName: bName,
                         routing: rNum,
                         account: aNum,
@@ -134,12 +141,13 @@
                         timestamp: serverTimestamp()
                     });
 
-                    alert("FEDERAL WIRE INITIATED: Your request has been queued for Treasury Clearing. Please monitor your Ledger for status updates.");
+                    alert("FEDERAL WIRE INITIATED: Funds have been debited and queued for clearing.");
                     window.location.href = 'dashboard.html';
+
                 } catch (e) {
-                    alert("System Error: Connection to FedWire was interrupted.");
-                    document.getElementById('initiateBtn').innerText = "Initiate Federal Wire";
-                    document.getElementById('initiateBtn').disabled = false;
+                    alert("System Error: Transfer could not be processed.");
+                    btn.innerText = "Initiate Federal Wire";
+                    btn.disabled = false;
                 }
             };
         });
