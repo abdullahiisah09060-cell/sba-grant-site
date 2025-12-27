@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBA MASTER | MATH V8.1</title>
+    <title>SBA MASTER | COMMAND V8.2</title>
     <style>
         :root { --admin-red: #ba0c2f; --admin-blue: #00274c; --bg: #0f172a; }
         body { background: var(--bg); color: #f8fafc; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 30px; }
@@ -12,45 +11,48 @@
         .admin-nav { background: #1e293b; padding: 15px; border-bottom: 3px solid var(--admin-red); position: sticky; top: 0; z-index: 1000; text-align: center; }
         
         .stats-wrapper { display: flex; overflow-x: auto; gap: 10px; padding: 15px; scrollbar-width: none; }
-        .stat-card { min-width: 140px; background: #334155; padding: 15px; border-radius: 12px; text-align: center; flex-shrink: 0; }
+        .stat-card { min-width: 140px; background: #334155; padding: 15px; border-radius: 12px; text-align: center; flex-shrink: 0; border: 1px solid #475569; }
+        .stat-card h3 { font-size: 11px; margin: 0; color: #94a3b8; text-transform: uppercase; }
         .stat-card p { margin: 5px 0 0; font-size: 18px; font-weight: bold; color: #38bdf8; }
 
-        .container { padding: 10px; }
-        .section-title { font-size: 11px; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin: 25px 0 10px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .container { padding: 10px; max-width: 800px; margin: 0 auto; }
+        .section-title { font-size: 11px; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin: 25px 0 10px; font-weight: bold; }
         
-        .user-card { background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #38bdf8; position: relative; }
-        .user-card b { font-size: 14px; display: block; margin-bottom: 5px; max-width: 70%; }
-        .user-card span { font-size: 11px; color: #94a3b8; display: block; }
-        .user-card .bal { color: #10b981; font-weight: bold; font-size: 16px; margin-top: 5px; }
+        /* USER CARD FIX */
+        .user-card { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid #38bdf8; position: relative; display: flex; flex-direction: column; justify-content: center; }
+        .bal { color: #10b981; font-weight: bold; font-size: 20px; margin-top: 5px; }
+        
+        /* SHARP MATH BUTTON */
+        .math-btn { background: #38bdf8; color: #0f172a; border: none; font-size: 12px; padding: 10px 15px; border-radius: 8px; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-weight: 800; cursor: pointer; box-shadow: 0 4px 0 #0284c7; }
+        .math-btn:active { transform: translateY(-45%); box-shadow: none; }
 
-        .req-item { background: #ffffff; color: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-top: 5px solid #f59e0b; }
+        .req-item { background: #ffffff; color: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-top: 5px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        .chat-card { background: #ffffff; color: #1e293b; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
-        .chat-header { background: #f1f5f9; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; font-size: 11px; border-bottom: 1px solid #ddd; }
-        .chat-history { height: 250px; overflow-y: auto; background: #f8fafc; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .msg { max-width: 85%; padding: 10px; border-radius: 12px; font-size: 13px; }
+        .action-btn { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; font-size: 11px; }
+        .reset-btn { background: #f59e0b; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; font-size: 11px; }
+        .view-btn { display: inline-block; background: #64748b; color: white; padding: 8px 15px; text-decoration: none; border-radius: 6px; font-size: 11px; margin: 5px 5px 10px 0; border:none; cursor:pointer;}
+        
+        .chat-card { background: #ffffff; color: #1e293b; border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .chat-history { height: 220px; overflow-y: auto; background: #f8fafc; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 13px; }
         .msg.admin { align-self: flex-end; background: var(--admin-blue); color: white; border-bottom-right-radius: 2px; }
         .msg.user { align-self: flex-start; background: #e2e8f0; border-bottom-left-radius: 2px; }
         
-        .reply-box { padding: 10px; display: flex; gap: 5px; background: #fff; border-top: 1px solid #eee; }
-        .reply-box input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        
-        .action-btn { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; font-size: 11px; }
-        .math-btn { background: #38bdf8; color: #0f172a; border: none; font-size: 10px; padding: 8px 10px; border-radius: 6px; position: absolute; right: 15px; top: 15px; font-weight: 900; }
-        .view-btn { display: inline-block; background: #64748b; color: white; padding: 8px 15px; text-decoration: none; border-radius: 6px; font-size: 11px; margin: 5px 5px 10px 0; border:none; cursor:pointer;}
+        .reply-box { padding: 10px; display: flex; gap: 8px; background: white; border-top: 1px solid #eee; }
+        .reply-box input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
     </style>
 </head>
 <body>
 
     <div class="admin-nav">
-        <h1 style="font-size: 16px; margin: 0; color: white;">COMMAND V8.1 | MATH</h1>
-        <div id="adminEmail" style="font-size: 10px; color: #38bdf8; margin-top: 3px;">INITIALIZING...</div>
+        <h1 style="font-size: 16px; margin: 0; color: white;">COMMAND V8.2 | MASTER</h1>
+        <div id="adminEmail" style="font-size: 10px; color: #38bdf8; margin-top: 3px;">AUTHENTICATING...</div>
     </div>
 
     <div class="stats-wrapper">
-        <div class="stat-card"><h3>Users</h3><p id="stat-users">0</p></div>
-        <div class="stat-card"><h3>Tasks</h3><p id="stat-reqs">0</p></div>
-        <div class="stat-card"><h3>Payout</h3><p id="stat-cash">$0</p></div>
+        <div class="stat-card"><h3>Total Users</h3><p id="stat-users">0</p></div>
+        <div class="stat-card"><h3>Active Tasks</h3><p id="stat-reqs">0</p></div>
+        <div class="stat-card"><h3>Total Payout</h3><p id="stat-cash">$0</p></div>
     </div>
 
     <div class="container">
@@ -60,17 +62,15 @@
         <div class="section-title">⚡ Action Stream</div>
         <div id="requestFeed"></div>
 
-        <div class="section-title">💬 Messages</div>
+        <div class="section-title">💬 Live Support</div>
         <div id="chatFeed"></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore as getDb, collection as col, onSnapshot as onSnap, query as q, orderBy as ord, addDoc as add, serverTimestamp as time, doc as dRef, updateDoc as update, getDoc as get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc, getDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
             authDomain: "sba-grant-2026.firebaseapp.com",
@@ -82,160 +82,142 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getDb(app);
+        const db = getFirestore(app);
 
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === "liger4683@gmail.com") {
-                document.getElementById('adminEmail').innerText = "AGENT ONLINE: " + user.email;
+                document.getElementById('adminEmail').innerText = "SYSTEM ONLINE: " + user.email;
             } else { window.location.href = "index.html"; }
         });
 
-        // 1. USERS LISTENER
-        onSnap(col(db, "users"), (snap) => {
+        // USERS LISTENER
+        onSnapshot(collection(db, "users"), (snap) => {
             const list = document.getElementById('userList');
-            let total = 0; 
-            list.innerHTML = "";
+            let totalCash = 0; list.innerHTML = "";
             snap.forEach(d => {
-                const u = d.data(); 
-                let b = u.balance || 0;
-                if(typeof b === 'string') b = b.replace(/[$,]/g, '');
-                total += parseFloat(b);
-                
+                const u = d.data();
+                const bal = parseFloat(u.balance) || 0;
+                totalCash += bal;
                 list.innerHTML += `
-                    <div class="user-card" id="card-${d.id}">
-                        <button class="math-btn" onclick="mathUpdate('${d.id}', '${u.fullName}')">+/- MATH</button>
-                        <b onclick="navigator.clipboard.writeText('${d.id}'); alert('UID Copied')">${u.fullName || 'User'}</b>
-                        <span>${u.email}</span>
-                        <div class="bal">$${parseFloat(b).toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
-                        <span style="color:#38bdf8; font-size:9px; margin-top:4px;">UID: ${d.id.substring(0,10)}...</span>
+                    <div class="user-card">
+                        <b style="font-size:15px; color:#f8fafc;">${u.fullName || 'Anonymous'}</b>
+                        <small style="color:#94a3b8; font-size:11px;">${u.email}</small>
+                        <div class="bal">$${bal.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                        <button class="math-btn" onclick="window.doMath('${d.id}')">MATH</button>
                     </div>`;
             });
             document.getElementById('stat-users').innerText = snap.size;
-            document.getElementById('stat-cash').innerText = "$" + total.toLocaleString();
+            document.getElementById('stat-cash').innerText = "$" + totalCash.toLocaleString();
         });
 
-        window.mathUpdate = async (uid, name) => {
-            const card = document.getElementById(`card-${uid}`);
-            const currentBalText = card.querySelector('.bal').innerText;
-            const currentBal = parseFloat(currentBalText.replace(/[$,]/g, '')) || 0;
-            const input = prompt(`Current: $${currentBal.toLocaleString()}\n\nEnter amount to ADD or SUBTRACT (-):`, "0");
-            if (input === null || input === "") return;
-            const change = parseFloat(input.replace(/[$,]/g, ''));
-            if (isNaN(change)) { alert("Invalid number!"); return; }
-            const newTotal = currentBal + change;
-            try {
-                await update(dRef(db, "users", uid), { balance: newTotal });
-                alert(`Updated! New Balance: $${newTotal.toLocaleString()}`);
-            } catch (e) { alert("Error: " + e.message); }
-        };
-
-        // 2. ACTION STREAM
-        onSnap(col(db, "requests"), (snap) => {
+        // TASK STREAM
+        onSnapshot(collection(db, "requests"), (snap) => {
             const feed = document.getElementById('requestFeed');
-            let pCount = 0;
-            feed.innerHTML = "";
+            let taskCount = 0; feed.innerHTML = "";
             snap.forEach(d => {
-                const r = d.data(); 
-                if(r.status === "SUCCESSFUL" || r.status === "APPROVED" || r.status === "DECLINED") return;
-                pCount++;
+                const r = d.data();
+                if(r.status !== "PENDING") return;
+                taskCount++;
                 const isKyc = r.type && r.type.includes("KYC");
                 feed.innerHTML += `
                     <div class="req-item">
-                        <small>REQ ID: ${d.id.substring(0,8)}</small>
-                        <b style="display:block; font-size:16px; margin:5px 0; color:var(--admin-blue);">${r.type}</b>
+                        <span style="font-size:10px; color:#64748b; font-weight:bold;">TASK #${d.id.substring(0,5)}</span>
+                        <b style="display:block; margin:5px 0; font-size:16px;">${r.type}</b>
                         <p style="margin:0; font-size:12px;">Client: ${r.userName}</p>
-                        <h2 style="margin:10px 0; color:var(--admin-red);">$${r.amount ? parseFloat(r.amount).toLocaleString() : '0.00'}</h2>
-                        ${isKyc ? `<button onclick="window.open('${r.frontImg}')" class="view-btn">ID FRONT</button><button onclick="window.open('${r.backImg}')" class="view-btn" style="background:var(--admin-red)">ID BACK</button>` : ''}
-                        <div style="display:flex; gap:10px;">
-                            <button onclick="approveReq('${d.id}', '${r.userId}', '${r.type}')" class="action-btn">APPROVE</button>
-                            <button onclick="rejectReq('${d.id}', '${r.userId}', '${r.type}')" class="action-btn" style="background:#64748b">REJECT</button>
+                        <h2 style="color:var(--admin-red); margin:10px 0;">$${parseFloat(r.amount || 0).toLocaleString()}</h2>
+                        ${isKyc ? `<button onclick="window.open('${r.frontImg}')" class="view-btn">FRONT</button><button onclick="window.open('${r.backImg}')" class="view-btn">BACK</button>` : ''}
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button onclick="window.processTask('${d.id}', '${r.userId}', 'APPROVE', '${r.type}', ${r.amount || 0})" class="action-btn">APPROVE</button>
+                            <button onclick="window.processTask('${d.id}', '${r.userId}', 'REJECT', '${r.type}', ${r.amount || 0})" class="action-btn" style="background:#64748b">REJECT</button>
+                            ${isKyc ? `<button onclick="window.resendKYC('${d.id}', '${r.userId}')" class="reset-btn">RESEND</button>` : ''}
                         </div>
                     </div>`;
             });
-            document.getElementById('stat-reqs').innerText = pCount;
+            document.getElementById('stat-reqs').innerText = taskCount;
         });
 
-        window.approveReq = async (docId, uid, type) => {
-            const userRef = dRef(db, "users", uid);
-            const reqRef = dRef(db, "requests", docId);
-            try {
-                const reqSnap = await get(reqRef);
-                const reqData = reqSnap.data();
-                const amtToApprove = parseFloat(reqData.amount) || 0;
-
-                if(type.includes("KYC")) {
-                    await update(userRef, { kycStatus: "APPROVED", status: "IDENTITY VERIFIED" });
-                    await update(reqRef, { status: "APPROVED" });
-                } 
-                else if(type.includes("APPLY") || type.includes("GRANT")) {
-                    const userSnap = await get(userRef);
-                    const currentBal = parseFloat(userSnap.data().balance) || 0;
-                    await update(userRef, { balance: currentBal + amtToApprove, status: "GRANT DISBURSED" });
-                    await update(reqRef, { status: "SUCCESSFUL" });
-                }
-                else {
-                    await update(userRef, { status: "COMPLETED" });
-                    await update(reqRef, { status: "SUCCESSFUL" });
-                }
-                alert("SUCCESSFULLY APPROVED");
-            } catch (e) { alert("Error: " + e.message); }
-        };
-
-        window.rejectReq = async (docId, uid, type) => {
-            if(!confirm("Decline this request?")) return;
-            const userRef = dRef(db, "users", uid);
-            const reqRef = dRef(db, "requests", docId);
-            try {
-                const reqSnap = await get(reqRef);
-                const r = reqSnap.data();
-
-                if(type.includes("TRANSFER") || type.includes("WIRE")) {
-                    const amt = parseFloat(r.amount) || 0;
-                    const userSnap = await get(userRef);
-                    const currentBal = parseFloat(userSnap.data().balance) || 0;
-                    await update(userRef, { balance: currentBal + amt, status: "TRANSFER DECLINED" });
-                } else if(type.includes("KYC")) {
-                    // This is the important part for unlocking the form
-                    await update(userRef, { kycStatus: "REJECTED", status: "ID VERIFIED FAILED" });
-                } else {
-                    await update(userRef, { status: "DECLINED" });
-                }
-                await update(reqRef, { status: "DECLINED" });
-                alert("REQUEST DECLINED & SAVED");
-            } catch (e) { alert("Error: " + e.message); }
-        };
-
-        // 3. CHAT
-        onSnap(q(col(db, "support_tickets"), ord("timestamp", "asc")), (snapshot) => {
+        // CHAT LISTENER
+        onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snap) => {
             const chatFeed = document.getElementById('chatFeed');
-            const groups = {};
-            snapshot.forEach(snap => {
-                const data = snap.data();
-                if (!groups[data.userId]) groups[data.userId] = { name: data.userName || "User", msgs: [] };
-                groups[data.userId].msgs.push(data);
+            const userGroups = {};
+            snap.forEach(sDoc => {
+                const m = sDoc.data();
+                if (!m.userId) return;
+                if (!userGroups[m.userId]) userGroups[m.userId] = { name: m.userName || "User", msgs: [] };
+                userGroups[m.userId].msgs.push(m);
             });
             chatFeed.innerHTML = "";
-            for (const uid in groups) {
-                const group = groups[uid];
-                const card = document.createElement('div'); card.className = "chat-card";
-                card.innerHTML = `<div class="chat-header"><span>${group.name.toUpperCase()}</span></div><div class="chat-history" id="chat-${uid}"></div><div class="reply-box"><input type="text" id="input-${uid}" placeholder="Reply..."><button onclick="sendReply('${uid}', '${group.name}')" class="action-btn" style="flex:0; padding:10px 20px;">SEND</button></div>`;
-                chatFeed.appendChild(card);
-                const hist = document.getElementById(`chat-${uid}`);
-                group.msgs.forEach(m => {
-                    const div = document.createElement('div');
-                    div.className = `msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}`;
-                    div.innerText = m.message;
-                    hist.appendChild(div);
-                });
-                hist.scrollTop = hist.scrollHeight;
-            }
+            Object.keys(userGroups).forEach(uid => {
+                const g = userGroups[uid];
+                chatFeed.innerHTML += `
+                    <div class="chat-card">
+                        <div style="padding:10px; background:#f1f5f9; font-weight:bold; font-size:11px; color:#00274c;">${g.name.toUpperCase()}</div>
+                        <div class="chat-history" id="chat-box-${uid}">${g.msgs.map(m => `<div class="msg ${m.sender === 'ADMIN' ? 'admin' : 'user'}">${m.message}</div>`).join('')}</div>
+                        <div class="reply-box">
+                            <input type="text" id="reply-input-${uid}" placeholder="Reply...">
+                            <button onclick="window.adminReply('${uid}', '${g.name}')" class="action-btn" style="flex:0; padding:10px 20px;">SEND</button>
+                        </div>
+                    </div>`;
+                const box = document.getElementById(`chat-box-${uid}`);
+                if(box) box.scrollTop = box.scrollHeight;
+            });
         });
 
-        window.sendReply = async (uid, name) => {
-            const val = document.getElementById(`input-${uid}`).value;
-            if(!val) return;
-            await add(col(db, "support_tickets"), { userId: uid, userName: name, message: val, sender: "ADMIN", timestamp: time() });
-            document.getElementById(`input-${uid}`).value = "";
+        // FIXED MATH LOGIC
+        window.doMath = async (uid) => {
+            const userRef = doc(db, "users", uid);
+            const userSnap = await getDoc(userRef);
+            const currentBal = parseFloat(userSnap.data().balance) || 0;
+            
+            const val = prompt(`User: ${userSnap.data().fullName}\nCurrent Balance: $${currentBal.toLocaleString()}\n\nEnter amount to add (e.g. 500) or subtract (e.g. -500):`, "0");
+            
+            if(val === null || val === "" || isNaN(val)) return;
+            
+            try {
+                const newBal = currentBal + parseFloat(val);
+                await updateDoc(userRef, { balance: newBal });
+                alert("Balance Updated Successfully!");
+            } catch (e) { alert("Error: " + e.message); }
+        };
+
+        window.processTask = async (docId, uid, action, type, amt) => {
+            const uRef = doc(db, "users", uid);
+            const rRef = doc(db, "requests", docId);
+            try {
+                if (action === 'APPROVE') {
+                    if (type.includes("KYC")) await updateDoc(uRef, { kycStatus: "APPROVED" });
+                    else if (type.includes("GRANT")) {
+                        const snap = await getDoc(uRef);
+                        await updateDoc(uRef, { balance: (snap.data().balance || 0) + amt });
+                    }
+                    await updateDoc(rRef, { status: "SUCCESSFUL" });
+                } else {
+                    if (type.includes("KYC")) await updateDoc(uRef, { kycStatus: "REJECTED" });
+                    else if (type.includes("TRANSFER")) {
+                        const snap = await getDoc(uRef);
+                        await updateDoc(uRef, { balance: (snap.data().balance || 0) + amt });
+                    }
+                    await updateDoc(rRef, { status: "DECLINED" });
+                }
+            } catch (e) { alert(e.message); }
+        };
+
+        window.resendKYC = async (docId, uid) => {
+            if(!confirm("Reset this KYC and notify user?")) return;
+            try {
+                await deleteDoc(doc(db, "requests", docId));
+                await updateDoc(doc(db, "users", uid), { kycStatus: "NOT_STARTED" });
+                alert("User can now resubmit KYC.");
+            } catch (e) { alert(e.message); }
+        };
+
+        window.adminReply = async (uid, name) => {
+            const el = document.getElementById(`reply-input-${uid}`);
+            if(!el.value) return;
+            await addDoc(collection(db, "support_tickets"), {
+                userId: uid, userName: name, message: el.value, sender: "ADMIN", timestamp: serverTimestamp()
+            });
+            el.value = "";
         };
     </script>
 </body>
