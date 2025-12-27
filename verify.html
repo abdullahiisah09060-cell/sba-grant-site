@@ -93,25 +93,42 @@
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
 
-            // Continuous background check
+            // If user already verified, push to dashboard immediately
+            if (user.emailVerified) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Background check: reloads user state every 3 seconds to detect link click
             const checkInterval = setInterval(async () => {
-                await reload(user);
-                if (user.emailVerified) {
-                    clearInterval(checkInterval);
-                    pill.innerText = "IDENTITY CONFIRMED ✓";
-                    pill.className = "status-pill verified";
-                    setTimeout(() => { window.location.href = 'welcome.html'; }, 1500);
+                try {
+                    await reload(user);
+                    if (user.emailVerified) {
+                        clearInterval(checkInterval);
+                        pill.innerText = "IDENTITY CONFIRMED ✓";
+                        pill.className = "status-pill verified";
+                        pill.classList.remove('pulse-text');
+                        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+                    }
+                } catch (e) {
+                    console.error("Session refresh failed");
                 }
             }, 3000);
         });
 
+        // Anti-spam resend logic
+        let resendCooldown = false;
         document.getElementById('resendBtn').onclick = async (e) => {
             e.preventDefault();
+            if (resendCooldown) return alert("Please wait 60 seconds before requesting another security link.");
+            
             try {
                 await sendEmailVerification(auth.currentUser);
-                alert("SUCCESS: A new security link has been dispatched.");
+                alert("SUCCESS: A new security link has been dispatched to your inbox.");
+                resendCooldown = true;
+                setTimeout(() => { resendCooldown = false; }, 60000);
             } catch(err) {
-                alert("Hold on! You just requested a link. Please check your spam folder.");
+                alert("Security block: Too many requests. Please check your spam folder.");
             }
         };
 
