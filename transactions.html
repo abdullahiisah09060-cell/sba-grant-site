@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,6 +28,7 @@
         .status-badge { font-size: 9px; padding: 3px 10px; border-radius: 4px; font-weight: 900; text-transform: uppercase; margin-top: 5px; display: inline-block; }
         .bg-pending { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
         .bg-success { background: #ecfdf5; color: #065f46; border: 1px solid #d1fae5; }
+        .bg-denied { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
         .empty-state { text-align: center; padding: 40px 20px; color: #64748b; font-size: 12px; font-style: italic; }
     </style>
 </head>
@@ -62,7 +64,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, collection, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
@@ -82,18 +84,23 @@
 
             const list = document.getElementById('transactionList');
 
-            // Listen to User for Balance/Master Allocation
+            // 1. MASTER LISTENER (User Data for main Allocation)
             onSnapshot(doc(db, "users", user.uid), (userSnap) => {
-                const userData = userSnap.data() || {};
-                const bal = parseFloat(userData.balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2});
+                if (!userSnap.exists()) return;
+                const userData = userSnap.data();
+                
+                // Robust balance cleaning
+                let rawBal = userData.balance || 0;
+                if(typeof rawBal === 'string') rawBal = rawBal.replace(/[$,]/g, '');
+                const bal = parseFloat(rawBal).toLocaleString('en-US', {minimumFractionDigits: 2});
 
-                // Listen to Requests for Transfers/Withdrawals
+                // 2. REQUESTS LISTENER (Transfers, KYC, etc)
                 const q = query(collection(db, "requests"), where("userId", "==", user.uid));
                 
                 onSnapshot(q, (snapshot) => {
                     list.innerHTML = ""; // Clear loader
 
-                    // 1. Show Grant Allocation Row
+                    // Add the Main Allocation Row First
                     list.innerHTML += `
                         <div class="t-row">
                             <div class="t-info">
@@ -107,35 +114,41 @@
                         </div>
                     `;
 
-                    // 2. Loop through other requests
-                    if (!snapshot.empty) {
-                        snapshot.forEach((doc) => {
-                            const t = doc.data();
-                            const isNeg = t.type === "WITHDRAWAL" || t.type === "TRANSFER";
-                            const amt = parseFloat(t.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2});
-                            
-                            let dateStr = "PENDING";
-                            if(t.timestamp) {
-                                const d = t.timestamp.toDate();
-                                dateStr = d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
-                            }
+                    // Add other activities
+                    snapshot.forEach((doc) => {
+                        const t = doc.data();
+                        const status = (t.status || 'PROCESSING').toUpperCase();
+                        
+                        // Handle Colors
+                        let badgeClass = "bg-pending";
+                        if (status === "SUCCESSFUL" || status === "APPROVED" || status === "COMPLETED") badgeClass = "bg-success";
+                        if (status === "DENIED" || status === "FAILED") badgeClass = "bg-denied";
 
-                            list.innerHTML += `
-                                <div class="t-row">
-                                    <div class="t-info">
-                                        <span class="t-name">${(t.type || "FUNDS PROCESSING").replace(/_/g, ' ')}</span>
-                                        <span class="t-date">${dateStr}</span>
-                                    </div>
-                                    <div class="t-amt">
-                                        <span class="${isNeg ? 'minus' : 'plus'}">${isNeg ? '-' : '+'}$${amt}</span><br>
-                                        <span class="status-badge ${t.status === 'APPROVED' ? 'bg-success' : 'bg-pending'}">
-                                            ${t.status || 'PROCESSING'}
-                                        </span>
-                                    </div>
+                        const isNeg = t.type === "WITHDRAWAL" || t.type === "TRANSFER";
+                        
+                        let amtRaw = t.amount || 0;
+                        if(typeof amtRaw === 'string') amtRaw = amtRaw.replace(/[$,]/g, '');
+                        const amt = parseFloat(amtRaw).toLocaleString('en-US', {minimumFractionDigits: 2});
+                        
+                        let dateStr = "PENDING";
+                        if(t.timestamp) {
+                            const d = t.timestamp.toDate();
+                            dateStr = d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+                        }
+
+                        list.innerHTML += `
+                            <div class="t-row">
+                                <div class="t-info">
+                                    <span class="t-name">${(t.type || "FUNDS PROCESSING").replace(/_/g, ' ')}</span>
+                                    <span class="t-date">${dateStr}</span>
                                 </div>
-                            `;
-                        });
-                    }
+                                <div class="t-amt">
+                                    <span class="${isNeg ? 'minus' : 'plus'}">${isNeg ? '-' : '+'}$${amt}</span><br>
+                                    <span class="status-badge ${badgeClass}">${status}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
                 });
             });
         });
