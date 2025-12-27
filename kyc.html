@@ -147,11 +147,14 @@
             const userSnap = await getDoc(doc(db, "users", user.uid));
             userProfile = userSnap.data() || {};
             
-            const kStatus = userProfile.kycStatus || "NOT STARTED";
+            // Normalize status to uppercase for reliable checking
+            const kStatus = (userProfile.kycStatus || "NOT STARTED").toUpperCase();
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('form-container').style.display = 'block';
 
-            if (kStatus === "PENDING" || kStatus === "APPROVED" || userProfile.status === "PENDING AUDIT") {
+            // ONLY block them if status is strictly PENDING. 
+            // If it is REJECTED, this IF is ignored and they see the form.
+            if (kStatus === "PENDING") {
                 document.getElementById('kyc-content').innerHTML = `
                     <div style="background: white; padding: 40px 20px; border-radius: 15px; text-align: center; border-top: 5px solid #f59e0b; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
                         <div style="font-size: 50px; margin-bottom: 20px;">🛡️</div>
@@ -163,6 +166,17 @@
                             Estimated Review Time: 12 - 24 Hours
                         </div>
                         <button onclick="location.href='dashboard.html'" class="submit-btn" style="background:#64748b;">Return to Portal</button>
+                    </div>
+                `;
+            } else if (kStatus === "APPROVED") {
+                document.getElementById('kyc-content').innerHTML = `
+                    <div style="background: white; padding: 40px 20px; border-radius: 15px; text-align: center; border-top: 5px solid #10b981; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                        <div style="font-size: 50px; margin-bottom: 20px;">✅</div>
+                        <h3 style="color: var(--sba-blue); margin-bottom: 10px;">IDENTITY VERIFIED</h3>
+                        <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+                            Your government identity has been successfully authenticated.
+                        </p>
+                        <button onclick="location.href='dashboard.html'" class="submit-btn">Return to Dashboard</button>
                     </div>
                 `;
             }
