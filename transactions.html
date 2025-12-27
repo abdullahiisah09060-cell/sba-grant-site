@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,22 +94,9 @@
                 const q = query(collection(db, "requests"), where("userId", "==", user.uid));
                 
                 onSnapshot(q, (snapshot) => {
-                    list.innerHTML = ""; // Clear loader
+                    list.innerHTML = ""; // Clear list
 
-                    // Collect all requests into an array
-                    const requests = [];
-                    snapshot.forEach((doc) => {
-                        requests.push({ id: doc.id, ...doc.data() });
-                    });
-
-                    // SORT: Newest Timestamp first
-                    requests.sort((a, b) => {
-                        const timeA = a.timestamp?.seconds || 0;
-                        const timeB = b.timestamp?.seconds || 0;
-                        return timeB - timeA;
-                    });
-
-                    // 1. Add the Main Allocation Row First (Always at very top)
+                    // --- ADD MAIN ALLOCATION FIRST ---
                     list.innerHTML += `
                         <div class="t-row">
                             <div class="t-info">
@@ -124,20 +110,25 @@
                         </div>
                     `;
 
-                    // 2. Add the sorted activities
-                    requests.forEach((t) => {
+                    // --- GET REQUESTS AND REVERSE THEM ---
+                    const items = [];
+                    snapshot.forEach(d => items.push({ id: d.id, ...d.data() }));
+                    
+                    // Sort items manually (newest first)
+                    items.sort((a, b) => (b.timestamp?.seconds || 9999999999) - (a.timestamp?.seconds || 9999999999));
+
+                    items.forEach((t) => {
                         const status = (t.status || 'PROCESSING').toUpperCase();
                         let badgeClass = "bg-pending";
                         if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) badgeClass = "bg-success";
                         if (["DENIED", "FAILED", "REJECTED"].includes(status)) badgeClass = "bg-denied";
 
                         const isNeg = t.type === "WITHDRAWAL" || t.type === "TRANSFER";
-                        
                         let amtRaw = t.amount || 0;
                         if(typeof amtRaw === 'string') amtRaw = amtRaw.replace(/[$,]/g, '');
                         const amt = parseFloat(amtRaw).toLocaleString('en-US', {minimumFractionDigits: 2});
                         
-                        let dateStr = "PENDING";
+                        let dateStr = "JUST NOW";
                         if(t.timestamp) {
                             const d = t.timestamp.toDate();
                             dateStr = d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
