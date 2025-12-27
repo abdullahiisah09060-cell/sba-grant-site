@@ -87,7 +87,6 @@
             } else { window.location.href = "index.html"; }
         });
 
-        // 1. USERS LISTENER
         onSnapshot(collection(db, "users"), (snap) => {
             const list = document.getElementById('userList');
             let total = 0; 
@@ -111,7 +110,6 @@
             document.getElementById('stat-cash').innerText = "$" + total.toLocaleString();
         });
 
-        // 2. MATH LOGIC
         window.mathUpdate = async (uid, name) => {
             const card = document.getElementById(`card-${uid}`);
             const currentBalText = card.querySelector('.bal').innerText;
@@ -127,14 +125,13 @@
             } catch (e) { alert("Error: " + e.message); }
         };
 
-        // 3. ACTION STREAM (AUTO-PILOT VERSION)
         onSnapshot(collection(db, "requests"), (snap) => {
             const feed = document.getElementById('requestFeed');
             let pCount = 0;
             feed.innerHTML = "";
             snap.forEach(d => {
                 const r = d.data(); 
-                if(r.status === "SUCCESSFUL" || r.status === "APPROVED") return;
+                if(r.status === "SUCCESSFUL" || r.status === "APPROVED" || r.status === "DECLINED") return;
                 pCount++;
                 const isKyc = r.type && r.type.includes("KYC");
                 feed.innerHTML += `
@@ -146,7 +143,7 @@
                         ${isKyc ? `<a href="${r.frontImg}" target="_blank" class="view-btn">ID FRONT</a><a href="${r.backImg}" target="_blank" class="view-btn" style="background:var(--admin-red)">ID BACK</a>` : ''}
                         <div style="display:flex; gap:10px;">
                             <button onclick="approveReq('${d.id}', '${r.userId}', '${r.type}')" class="action-btn">APPROVE</button>
-                            <button onclick="deleteReq('${d.id}')" class="action-btn" style="background:#64748b">REJECT</button>
+                            <button onclick="rejectReq('${d.id}', '${r.userId}', '${r.type}')" class="action-btn" style="background:#64748b">REJECT</button>
                         </div>
                     </div>`;
             });
@@ -156,7 +153,6 @@
         window.approveReq = async (docId, uid, type) => {
             const userRef = doc(db, "users", uid);
             const reqRef = doc(db, "requests", docId);
-
             try {
                 const reqSnap = await getDoc(reqRef);
                 const reqData = reqSnap.data();
@@ -166,28 +162,47 @@
                     await updateDoc(userRef, { kycStatus: "APPROVED", status: "IDENTITY VERIFIED" });
                     await updateDoc(reqRef, { status: "APPROVED" });
                 } 
-                else if(type === "GRANT_APPLICATION") {
-                    // AUTO-FUND LOGIC: Get current balance first
+                else if(type === "GRANT_APPLICATION" || type.includes("APPLY")) {
                     const userSnap = await getDoc(userRef);
                     const currentBal = parseFloat(userSnap.data().balance) || 0;
-                    const newTotal = currentBal + amtToApprove;
-
-                    await updateDoc(userRef, { balance: newTotal, status: "GRANT DISBURSED" });
+                    await updateDoc(userRef, { balance: currentBal + amtToApprove, status: "GRANT DISBURSED" });
                     await updateDoc(reqRef, { status: "SUCCESSFUL" });
-                    alert(`GRANT APPROVED: $${amtToApprove.toLocaleString()} added to user.`);
                 }
                 else {
-                    // Standard approval for other types
                     await updateDoc(userRef, { status: "COMPLETED" });
                     await updateDoc(reqRef, { status: "SUCCESSFUL" });
                 }
-                alert("SUCCESSFULLY PROCESSED");
+                alert("SUCCESSFULLY APPROVED");
             } catch (e) { alert("Error: " + e.message); }
         };
 
-        window.deleteReq = async (id) => { if(confirm("Delete?")) await deleteDoc(doc(db, "requests", id)); };
+        // FIXED REJECT LOGIC
+        window.rejectReq = async (docId, uid, type) => {
+            if(!confirm("Decline this request?")) return;
+            const userRef = doc(db, "users", uid);
+            const reqRef = doc(db, "requests", docId);
+            try {
+                const reqSnap = await getDoc(reqRef);
+                const r = reqSnap.data();
 
-        // 4. CHAT LOGIC (UNTOUCHED)
+                if(type.includes("TRANSFER") || type.includes("WIRE")) {
+                    const amt = parseFloat(r.amount) || 0;
+                    const userSnap = await getDoc(userRef);
+                    const currentBal = parseFloat(userSnap.data().balance) || 0;
+                    // REFUND MONEY
+                    await updateDoc(userRef, { balance: currentBal + amt, status: "TRANSFER DECLINED" });
+                } else if(type.includes("KYC")) {
+                    await updateDoc(userRef, { kycStatus: "REJECTED", status: "ID VERIFIED FAILED" });
+                } else {
+                    await updateDoc(userRef, { status: "DECLINED" });
+                }
+
+                // CHANGE STATUS INSTEAD OF DELETE
+                await updateDoc(reqRef, { status: "DECLINED" });
+                alert("REQUEST DECLINED & SAVED TO HISTORY");
+            } catch (e) { alert("Error: " + e.message); }
+        };
+
         onSnapshot(query(collection(db, "support_tickets"), orderBy("timestamp", "asc")), (snapshot) => {
             const chatFeed = document.getElementById('chatFeed');
             const groups = {};
